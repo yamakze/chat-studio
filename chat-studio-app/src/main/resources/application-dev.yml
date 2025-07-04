@@ -1,0 +1,91 @@
+server:
+  port: 8091
+# 线程池配置
+thread:
+  pool:
+    executor:
+      config:
+        core-pool-size: 20
+        max-pool-size: 50
+        keep-alive-time: 5000
+        block-queue-size: 5000
+        policy: CallerRunsPolicy
+
+# 数据库配置；启动时配置数据库资源信息
+spring:
+  ai:
+    openai:
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      api-key: sk-xxx
+      embedding:
+        options:
+          model: text-embedding-v3
+      chat:
+        options:
+          model: qwen-plus
+#    chat:
+#      memory:
+#        repository:
+#          jdbc:
+#            schema: classpath:/sql/memory.sql
+  datasource:
+    hikari:
+      #连接池名
+      pool-name: HikariCP
+      #最小空闲连接数
+      minimum-idle: 5
+      # 空闲连接存活最大时间，默认10分钟
+      idle-timeout: 600000
+      # 连接池最大连接数，默认是10
+      maximum-pool-size: 10
+      # 此属性控制从池返回的连接的默认自动提交行为,默认值：true
+      auto-commit: true
+      # 此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认30分钟
+      max-lifetime: 1800000
+      # 数据库连接超时时间,默认30秒
+      connection-timeout: 30000
+      # 连接测试query
+      connection-test-query: SELECT 1
+    username: root
+    password: root
+    url: jdbc:mysql://localhost:3306/ai-agent-station?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  vector:
+    pgvector:
+      datasource:
+        username: postgres
+        password: postgres
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://localhost:5432/springai
+  main:
+    allow-bean-definition-overriding: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+
+memory:
+  enabled: true
+  consolidate:
+    schedule: "0 0 0/6 * * ?"
+    look-back-hours: 6 # 每次巩固记忆时，回顾过去多少小时的记忆
+  reflection:
+    schedule: "0 0 4 * * ?"
+    look-back-days: 7        # 每次反思时，回顾过去多少天的记忆
+    trigger-threshold: 5    # 至少有多少条新记忆时才触发反思
+    batch-size: 50          # 一次性从数据库中获取用于反思的最大记忆数量
+
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: AUTO
+
+# 日志
+logging:
+  level:
+    root: debug
+  config: classpath:logback-spring.xml

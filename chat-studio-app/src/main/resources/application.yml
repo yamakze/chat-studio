@@ -1,0 +1,5 @@
+spring:
+  config:
+    name: chat-studio-app
+  profiles:
+    active: dev
