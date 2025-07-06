@@ -16,7 +16,7 @@ spring:
   ai:
     openai:
       base-url: https://dashscope.aliyuncs.com/compatible-mode
-      api-key: sk-xxx
+      api-key: sk-305b1a890c8e44c5882cbc1af3e61c17
       embedding:
         options:
           model: text-embedding-v3
@@ -47,7 +47,7 @@ spring:
       # 连接测试query
       connection-test-query: SELECT 1
     username: root
-    password: root
+    password: azumaseren
     url: jdbc:mysql://localhost:3306/ai-agent-station?useUnicode=true&characterEncoding=utf8&autoReconnect=true&zeroDateTimeBehavior=convertToNull&serverTimezone=Asia/Shanghai&useSSL=true
     driver-class-name: com.mysql.cj.jdbc.Driver
   vector:

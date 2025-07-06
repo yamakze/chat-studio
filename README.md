@@ -2,7 +2,6 @@
 
 > 基于 Spring AI + Vue 2 开发的本地 AI 对话工作室，支持多模型、多功能协作。
 
----
 
 ## 📖 项目简介（Introduction）
 
@@ -10,7 +9,6 @@
 项目支持模型接入管理、知识增强、文件管理、系统角色配置、上下文记忆机制等核心功能，  
 全部数据本地存储，配备灵活的后台管理页面，帮助用户定制专属的智能对话体验。
 
----
 
 ## 🛠️ 技术栈（Tech Stack）
 
@@ -23,6 +21,9 @@
 ## 🧠 核心设计（Core Architecture）
 
 ![核心设计](/img/核心设计.png)
+
+
+![流程图](/img/流程图.png)
 
 ---
 
@@ -116,6 +117,6 @@ bash start.sh
 欢迎Star、Fork 项目！
 
 * GitHub: [@yamakze](https://github.com/yamakze)
-* Email: 
+* Gitee: [@hermione-yamada](https://gitee.com/hermione-yamada)
 
 
