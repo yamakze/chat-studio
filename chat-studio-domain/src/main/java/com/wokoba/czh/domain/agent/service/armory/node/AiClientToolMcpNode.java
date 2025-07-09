@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 
 @Slf4j
@@ -41,10 +42,12 @@ public class AiClientToolMcpNode extends AbstractArmorySupport {
         }
 
         for (AiClientToolMcpEntity mcpVO : aiClientToolMcpList) {
-            // 创建McpSyncClient对象
-            McpSyncClient mcpSyncClient = createMcpSyncClient(mcpVO);
-            // 使用父类的通用注册方法
-            customBeanRegistrar.registerBean(beanName(mcpVO.getId()), McpSyncClient.class, mcpSyncClient);
+            if(Objects.isNull(customBeanRegistrar.getBean(beanName(mcpVO.getId())))){
+                // 创建McpSyncClient对象
+                McpSyncClient mcpSyncClient = createMcpSyncClient(mcpVO);
+                // 使用父类的通用注册方法
+                customBeanRegistrar.registerBean(beanName(mcpVO.getId()), McpSyncClient.class, mcpSyncClient);
+            }
         }
 
         return router(requestParameter, dynamicContext);

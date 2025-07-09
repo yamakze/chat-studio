@@ -3,6 +3,7 @@ package com.wokoba.czh.domain.agent.service.armory.node;
 import com.alibaba.fastjson.JSON;
 import com.wokoba.czh.domain.agent.model.entity.ChatEngineStarterEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiClientModelEntity;
+import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
 import com.wokoba.czh.domain.agent.service.armory.AbstractArmorySupport;
 import com.wokoba.czh.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import com.wokoba.czh.types.common.Constants;
@@ -15,6 +16,7 @@ import org.springframework.ai.openai.api.OpenAiApi;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 
 @Slf4j
@@ -37,10 +39,12 @@ public class AiClientModelNode extends AbstractArmorySupport {
 
         // 遍历模型列表，为每个模型创建对应的Bean
         for (AiClientModelEntity model : aiClientModelList) {
-            // 创建OpenAiChatModel对象
-            OpenAiChatModel chatModel = createOpenAiChatModel(model);
-            // 使用父类的通用注册方法
-            customBeanRegistrar.registerBean(beanName(model.getId()), OpenAiChatModel.class, chatModel);
+            if (Objects.isNull(customBeanRegistrar.getBean(beanName(model.getId())))) {
+                // 创建OpenAiChatModel对象
+                OpenAiChatModel chatModel = createOpenAiChatModel(model);
+                // 使用父类的通用注册方法
+                customBeanRegistrar.registerBean(beanName(model.getId()), OpenAiChatModel.class, chatModel);
+            }
         }
 
         return router(requestParameter, dynamicContext);

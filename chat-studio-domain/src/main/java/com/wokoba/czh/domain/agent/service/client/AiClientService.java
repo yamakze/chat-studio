@@ -53,10 +53,10 @@ public class AiClientService {
     }
 
     public void destroy(Long clientId) {
-        repository.deleteClientById(clientId);
         chatMemory.clear("chat_" + clientId);
-        vectorStore.delete(new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key("clientId"), new Filter.Value(clientId)));
         customBeanRegistrar.clearBean(Constants.BeanName.CLIENT + clientId);
+        vectorStore.delete(new Filter.Expression(Filter.ExpressionType.EQ, new Filter.Key("clientId"), new Filter.Value(clientId)));
+        repository.deleteClientById(clientId);
     }
 }
 

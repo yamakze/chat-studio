@@ -24,6 +24,7 @@ import org.springframework.ai.vectorstore.filter.FilterExpressionTextParser;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Component
@@ -52,10 +53,12 @@ public class AiClientAdvisorNode extends AbstractArmorySupport {
         }
 
         for (AiClientAdvisorEntity aiClientAdvisorEntity : aiClientAdvisorList) {
-            // 构建顾问访问对象
-            Advisor advisor = createAdvisor(aiClientAdvisorEntity);
-            // 注册Bean对象
-            customBeanRegistrar.registerBean(beanName(aiClientAdvisorEntity.getId()), Advisor.class, advisor);
+            if (Objects.isNull(customBeanRegistrar.getBean(beanName(aiClientAdvisorEntity.getId())))) {
+                // 构建顾问访问对象
+                Advisor advisor = createAdvisor(aiClientAdvisorEntity);
+                // 注册Bean对象
+                customBeanRegistrar.registerBean(beanName(aiClientAdvisorEntity.getId()), Advisor.class, advisor);
+            }
         }
         return router(requestParameter, dynamicContext);
     }

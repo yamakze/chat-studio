@@ -1,6 +1,7 @@
 package com.wokoba.czh.domain.agent.service.armory;
 
 import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -18,23 +19,28 @@ public class DefaultDynamicBeanRegistry implements CustomBeanRegistrar {
     }
 
 
+    @SneakyThrows
     @Override
     public void clearBean(String beanName) {
         DefaultListableBeanFactory beanFactory = (DefaultListableBeanFactory) applicationContext.getAutowireCapableBeanFactory();
-        // 销毁实例
-        if (beanFactory.containsSingleton(beanName)) {
-            beanFactory.destroySingleton(beanName);
-        }
+        if (beanFactory.containsBean(beanName)) {
+            Object existing = beanFactory.getBean(beanName);
+            if (existing instanceof AutoCloseable closeable) {
+                closeable.close();
+            }
 
-        // 移除定义
-        if (beanFactory.containsBeanDefinition(beanName)) {
+            // 移除旧的定义
+            beanFactory.destroySingleton(beanName);
             beanFactory.removeBeanDefinition(beanName);
         }
     }
 
     @Override
     public <T> T getBean(String beanName) {
-        return (T) applicationContext.getBean(beanName);
+        if (applicationContext.containsBean(beanName)) {
+            return (T) applicationContext.getBean(beanName);
+        }
+        return null;
     }
 
     @Override

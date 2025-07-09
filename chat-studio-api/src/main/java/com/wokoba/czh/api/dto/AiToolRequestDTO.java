@@ -41,5 +41,5 @@ public class AiToolRequestDTO {
     /**
      * 基础工具标志
      */
-    private Integer basic;
+    private Boolean basic;
 }
