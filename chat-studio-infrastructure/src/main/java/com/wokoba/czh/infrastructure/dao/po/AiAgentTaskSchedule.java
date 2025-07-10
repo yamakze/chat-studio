@@ -39,7 +39,7 @@ public class AiAgentTaskSchedule  {
     private String cronExpression;
     
     /**
-     * 任务入参配置(JSON格式)
+     * 任务入参配置
      */
     private String taskParam;
 

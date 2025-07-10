@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ai.document.Document;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +17,13 @@ import java.util.stream.Collectors;
 
 /**
  * 负责记忆的反思与再巩固。
- * 这是一个定时任务，定期回顾近期巩固的记忆，提炼出更高层次的洞见或发现矛盾，
+ * 定期回顾近期巩固的记忆，提炼出更高层次的洞见或发现矛盾，
  * 并将这些新见解存回记忆库。
  */
-@Service
+@Component
 public class MemoryReflectorJob {
 
-    private static final Logger logger = LoggerFactory.getLogger(MemoryReflectionService.class);
+    private static final Logger logger = LoggerFactory.getLogger(MemoryReflectorJob.class);
 
     private final MemoryReflectionService memoryReflectionService;
 

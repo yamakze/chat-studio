@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 @Mapper
-public interface chatMemoryDao extends BaseMapper<SpringAiChatMemory> {
+public interface ChatMemoryDao extends BaseMapper<SpringAiChatMemory> {
 
     @Insert("<script>" +
             "INSERT INTO SPRING_AI_CHAT_MEMORY (conversation_id, type, content, timestamp, status) VALUES " +

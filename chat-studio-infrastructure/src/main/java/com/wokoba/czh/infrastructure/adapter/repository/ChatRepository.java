@@ -55,6 +55,8 @@ public class ChatRepository implements IChatRepository {
     private ObjectMapper objectMapper;
     @Autowired
     private AiAgentTaskScheduleDao aiAgentTaskScheduleDao;
+    @Autowired
+    private AiTaskExecutionRecordDao aiTaskExecutionRecordDao;
 
     @Override
     public List<AiClientModelEntity> queryAiClientModelVOListByClientIds(List<Long> clientIdList) {
@@ -242,6 +244,17 @@ public class ChatRepository implements IChatRepository {
             aiClientAdvisorConfigDao.delete(Wrappers.lambdaQuery(AiClientAdvisorConfig.class).eq(AiClientAdvisorConfig::getClientId, clientId));
             aiClientToolConfigDao.delete(Wrappers.lambdaQuery(AiClientToolConfig.class).eq(AiClientToolConfig::getClientId, clientId));
         });
+    }
+
+    @Override
+    public void insertTaskExecutionRecord(Long taskId, String request, String response, Integer totalTokens, String status) {
+        aiTaskExecutionRecordDao.insert(AiTaskExecutionRecord.builder()
+                .taskId(taskId)
+                .request(request)
+                .response(response)
+                .totalTokens(totalTokens)
+                .status(status)
+                .build());
     }
 
     @SneakyThrows

@@ -32,4 +32,6 @@ public interface IChatRepository {
     List<Long> queryAllInvalidTaskScheduleIds();
 
     void deleteClientById(Long clientId);
+
+    void insertTaskExecutionRecord(Long taskId, String request, String response, Integer totalTokens, String status);
 }

@@ -7,6 +7,7 @@ import com.wokoba.czh.domain.agent.service.task.AiAgentTaskService;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
@@ -155,10 +156,15 @@ public class AgentTaskJob implements DisposableBean {
         try {
             log.info("开始执行任务，ID: {}, 描述: {}", task.getId(), task.getDescription());
             // 执行任务
-            aiChatService.aiChat(new AiChatRequestEntity().setClientId(task.getAgentId()).setUserMessage(task.getTaskParam()));
+            ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity().setClientId(task.getAgentId()).setUserMessage(task.getTaskParam()));
 
-            log.info("任务执行完成，ID: {}", task.getId());
+            aiAgentTaskService.recordTaskCompleted(task.getId(),
+                    task.getTaskParam(),
+                    chatResponse.getResult().getOutput().getText(),
+                    chatResponse.getMetadata().getUsage().getTotalTokens());
+            log.info("任务执行完成，ID: {},content:{}", task.getId(), chatResponse.getResult().getOutput().getText());
         } catch (Exception e) {
+            aiAgentTaskService.recordTaskFailure(task.getId(), task.getTaskParam());
             log.error("执行任务时发生错误，ID: {}", task.getId(), e);
         }
     }

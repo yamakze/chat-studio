@@ -1,11 +1,13 @@
 package com.wokoba.czh.trigger.http;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.wokoba.czh.api.dto.AiTaskExecutionRecordResponseDTO;
 import com.wokoba.czh.api.dto.AiTaskScheduleRequestDTO;
 import com.wokoba.czh.api.group.Groups;
 import com.wokoba.czh.infrastructure.dao.AiAgentTaskScheduleDao;
+import com.wokoba.czh.infrastructure.dao.AiTaskExecutionRecordDao;
 import com.wokoba.czh.infrastructure.dao.po.AiAgentTaskSchedule;
-import jakarta.validation.Valid;
+import com.wokoba.czh.infrastructure.dao.po.AiTaskExecutionRecord;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +23,8 @@ public class AiTaskController {
 
     @Autowired
     private AiAgentTaskScheduleDao aiAgentTaskScheduleDao;
-
+    @Autowired
+    private AiTaskExecutionRecordDao aiTaskExecutionRecordDao;
 
     /**
      * 创建任务
@@ -95,6 +98,19 @@ public class AiTaskController {
                 .orderByDesc(AiAgentTaskSchedule::getCreateTime)));
     }
 
+    /**
+     * 查询任务执行日志
+     */
+    @GetMapping("/log/{taskId}")
+    public ResponseEntity<List<AiTaskExecutionRecordResponseDTO>> getTaskExecutionRecords(@PathVariable Long taskId) {
+        List<AiTaskExecutionRecord> aiTaskExecutionRecords = aiTaskExecutionRecordDao.selectList(Wrappers.lambdaQuery(AiTaskExecutionRecord.class)
+                .eq(AiTaskExecutionRecord::getTaskId, taskId)
+                .orderByDesc(AiTaskExecutionRecord::getExecuteTime)
+                .last("limit 1000"));
+
+        return ResponseEntity.ok(aiTaskExecutionRecords.stream().map(this::convertToTaskRecordResponseDTO).toList());
+    }
+
     private AiAgentTaskSchedule convertToTaskSchedule(AiTaskScheduleRequestDTO requestDTO) {
         if (requestDTO == null) {
             return null;
@@ -108,5 +124,18 @@ public class AiTaskController {
         aiAgentTaskSchedule.setTaskParam(requestDTO.getTaskParam());
         aiAgentTaskSchedule.setStatus(requestDTO.getStatus());
         return aiAgentTaskSchedule;
+    }
+
+    private AiTaskExecutionRecordResponseDTO convertToTaskRecordResponseDTO(AiTaskExecutionRecord taskExecutionRecord) {
+        if (taskExecutionRecord == null) {
+            return null;
+        }
+        AiTaskExecutionRecordResponseDTO aiTaskExecutionRecordResponseDTO = new AiTaskExecutionRecordResponseDTO();
+        aiTaskExecutionRecordResponseDTO.setRequest(taskExecutionRecord.getRequest());
+        aiTaskExecutionRecordResponseDTO.setResponse(taskExecutionRecord.getResponse());
+        aiTaskExecutionRecordResponseDTO.setTotalTokens(taskExecutionRecord.getTotalTokens());
+        aiTaskExecutionRecordResponseDTO.setStatus(taskExecutionRecord.getStatus());
+        aiTaskExecutionRecordResponseDTO.setExecuteTime(taskExecutionRecord.getExecuteTime());
+        return aiTaskExecutionRecordResponseDTO;
     }
 }

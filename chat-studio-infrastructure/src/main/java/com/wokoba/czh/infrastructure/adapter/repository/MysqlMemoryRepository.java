@@ -1,7 +1,7 @@
 package com.wokoba.czh.infrastructure.adapter.repository;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.wokoba.czh.infrastructure.dao.chatMemoryDao;
+import com.wokoba.czh.infrastructure.dao.ChatMemoryDao;
 import com.wokoba.czh.infrastructure.dao.po.SpringAiChatMemory;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -18,9 +18,10 @@ import java.util.Map;
 
 @Slf4j
 //@Repository
+//TODO 短期记忆暂时存储在浏览器
 public class MysqlMemoryRepository implements ChatMemoryRepository {
     @Resource
-    private chatMemoryDao chatMemoryDao;
+    private ChatMemoryDao chatMemoryDao;
 
     @Override
     public List<String> findConversationIds() {

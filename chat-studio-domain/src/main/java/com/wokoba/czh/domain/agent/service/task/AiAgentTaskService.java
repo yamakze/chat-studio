@@ -24,4 +24,11 @@ public class AiAgentTaskService implements IAiAgentTaskService {
         return repository.queryAllInvalidTaskScheduleIds();
     }
 
+    public void recordTaskCompleted(Long taskId, String request, String response, Integer totalTokens) {
+        repository.insertTaskExecutionRecord(taskId,request,response,totalTokens,"completed");
+    }
+
+    public void recordTaskFailure(Long taskId, String request) {
+        repository.insertTaskExecutionRecord(taskId,request,"无",0,"failure");
+    }
 }
