@@ -50,7 +50,7 @@ public class AiChatController implements IAiChatApi {
         ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryAction(requestDTO.getRetryActionCode())
+                .setRetryActionCode(requestDTO.getRetryActionCode())
                 .setClientId(requestDTO.getChatClientId()));
         Integer completionTokens = chatResponse.getMetadata().getUsage().getCompletionTokens();
         Integer promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
@@ -68,7 +68,7 @@ public class AiChatController implements IAiChatApi {
         Flux<ChatResponse> responseFlux = aiChatService.aiChatStream(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryAction(requestDTO.getRetryActionCode())
+                .setRetryActionCode(requestDTO.getRetryActionCode())
                 .setClientId(requestDTO.getChatClientId()));
 
         return ResponseEntity.ok(responseFlux.map(response -> {

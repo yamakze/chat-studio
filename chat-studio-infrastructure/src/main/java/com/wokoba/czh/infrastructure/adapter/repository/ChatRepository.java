@@ -17,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -226,9 +224,25 @@ public class ChatRepository implements IChatRepository {
     }
 
     @Override
-    public List<AiTaskScheduleEntity> queryAllValidTaskSchedule() {
-        return aiAgentTaskScheduleDao.getTaskScheduleByStatus(1);
+    public List<AiTaskScheduleEntity> findAllValidSchedulesWithActiveClient() {
+        List<AiTaskScheduleEntity> schedules = aiAgentTaskScheduleDao.getTaskScheduleByStatus(1);
+        if (schedules.isEmpty()) return List.of();
+        Set<Long> activeAgentIds = aiClientDao.selectBatchIds(
+                schedules.stream().map(AiTaskScheduleEntity::getAgentId).toList()
+        ).stream().map(AiClient::getId).collect(Collectors.toSet());
+
+        return schedules.stream()
+                .filter(schedule -> {
+                    Long agentId = schedule.getAgentId();
+                    boolean isActive = activeAgentIds.contains(agentId);
+                    if (!isActive) {
+                        log.warn("agent 配置缺失或无效。agentId={}", agentId);
+                    }
+                    return isActive;
+                })
+                .toList();
     }
+
 
     @Override
     public List<Long> queryAllInvalidTaskScheduleIds() {

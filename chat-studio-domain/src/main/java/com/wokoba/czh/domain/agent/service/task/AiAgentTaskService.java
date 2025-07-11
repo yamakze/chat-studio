@@ -16,7 +16,7 @@ public class AiAgentTaskService implements IAiAgentTaskService {
 
     @Override
     public List<AiTaskScheduleEntity> queryAllValidTaskSchedule() {
-        return repository.queryAllValidTaskSchedule();
+        return repository.findAllValidSchedulesWithActiveClient();
     }
 
     @Override

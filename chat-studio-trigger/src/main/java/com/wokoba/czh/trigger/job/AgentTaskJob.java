@@ -2,6 +2,7 @@ package com.wokoba.czh.trigger.job;
 
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiTaskScheduleEntity;
+import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
 import com.wokoba.czh.domain.agent.service.IAiChatService;
 import com.wokoba.czh.domain.agent.service.task.AiAgentTaskService;
 import jakarta.annotation.PostConstruct;
@@ -156,7 +157,9 @@ public class AgentTaskJob implements DisposableBean {
         try {
             log.info("开始执行任务，ID: {}, 描述: {}", task.getId(), task.getDescription());
             // 执行任务
-            ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity().setClientId(task.getAgentId()).setUserMessage(task.getTaskParam()));
+            ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity()
+                    .setClientId(task.getAgentId())
+                    .setUserMessage(task.getTaskParam()));
 
             aiAgentTaskService.recordTaskCompleted(task.getId(),
                     task.getTaskParam(),

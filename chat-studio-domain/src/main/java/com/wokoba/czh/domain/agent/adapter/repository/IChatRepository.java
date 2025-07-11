@@ -27,7 +27,7 @@ public interface IChatRepository {
 
     Long initAiClient();
 
-    List<AiTaskScheduleEntity> queryAllValidTaskSchedule();
+    List<AiTaskScheduleEntity> findAllValidSchedulesWithActiveClient();
 
     List<Long> queryAllInvalidTaskScheduleIds();
 

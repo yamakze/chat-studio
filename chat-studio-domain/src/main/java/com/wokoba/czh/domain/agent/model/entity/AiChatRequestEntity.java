@@ -1,5 +1,6 @@
 package com.wokoba.czh.domain.agent.model.entity;
 
+import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.ai.content.Media;
@@ -17,9 +18,14 @@ public class AiChatRequestEntity {
     private Long clientId;
     private Long ragId;
     private String userMessage;
-    private Integer retryAction ;
+    private Integer retryActionCode;
 
     public String getConversationId() {
         return "chat_" + this.clientId;
     }
+
+    public ChatRetryAction getRetryAction() {
+        return ChatRetryAction.fromCode(this.retryActionCode);
+    }
 }
+

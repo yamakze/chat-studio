@@ -1,5 +1,6 @@
 package com.wokoba.czh.domain.agent.service.advisor;
 
+import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
 import org.springframework.ai.chat.client.ChatClientMessageAggregator;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -18,8 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.wokoba.czh.domain.agent.model.valobj.ChatRetryActionType.REEDIT_LAST_USER_QUESTION;
-import static com.wokoba.czh.domain.agent.model.valobj.ChatRetryActionType.RETRY_LAST_ASSISTANT_RESPONSE;
+import static com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction.*;
 
 
 public class ChatContextCorrectionAdvisor implements BaseChatMemoryAdvisor {
@@ -43,12 +43,12 @@ public class ChatContextCorrectionAdvisor implements BaseChatMemoryAdvisor {
     @Override
     public ChatClientRequest before(ChatClientRequest request, AdvisorChain advisorChain) {
         Map<String, Object> context = request.context();
-        Integer actionCode = (Integer) context.get(RETRY_ACTION_KEY);
+        ChatRetryAction retryAction = (ChatRetryAction) context.get(RETRY_ACTION_KEY);
         String conversationId = this.getConversationId(context, this.conversationId);
 
         List<Message> messages = new ArrayList<>(chatMemory.get(conversationId));
 
-        if (Objects.equals(actionCode, RETRY_LAST_ASSISTANT_RESPONSE.getCode())) {
+        if (Objects.equals(retryAction, RETRY_ASSISTANT_RESPONSE)) {
             request = request.mutate().prompt(
                             request.prompt()
                                     .augmentUserMessage(userMessage -> userMessage
@@ -59,8 +59,8 @@ public class ChatContextCorrectionAdvisor implements BaseChatMemoryAdvisor {
                     .build();
         }
 
-        if (Objects.equals(actionCode, REEDIT_LAST_USER_QUESTION.getCode())) {
-            clearLastUserQA(conversationId,messages);
+        if (Objects.equals(retryAction, REEDIT_USER_QUESTION)) {
+            clearLastUserQA(conversationId, messages);
         }
 
         messages.addAll(request.prompt().getInstructions());
