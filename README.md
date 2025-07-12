@@ -98,17 +98,16 @@ bash start.sh
 
 > 🔧 默认运行端口：`http://localhost:8091`
 
-📌 默认配置文件路径：`src/main/resources/application.yml`
+📌 默认配置文件路径：`src/main/resources/application.yml`，请根据实际情况配置数据库连接、模型参数等信息。
 
-📌 请根据实际情况配置数据库连接、模型参数等信息。
-### ~~💻 启动前端服务~~
+### 💻 启动前端服务
+```bash
+cd chat-studio
+npm install -g serve
+serve -s front
+open "http://localhost:3000"
+```
 
-
-~~cd chat-studio-front~~
-
-~~npm install~~
-
-~~npm run dev~~
 
 ---
 

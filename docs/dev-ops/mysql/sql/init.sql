@@ -1,6 +1,8 @@
 -- auto-generated definition
 create schema if not exists `ai-agent-station` collate utf8mb4_0900_ai_ci;
 
+use `ai-agent-station`;
+
 -- MySQL dump 10.13  Distrib 9.2.0, for macos15.2 (arm64)
 --
 -- Host: 127.0.0.1    Database: ai-agent-station
