@@ -2,13 +2,11 @@
 
 > 基于 Spring AI + Vue 2 开发的本地 AI 对话工作室，支持多模型、多功能协作。
 
-
 ## 📖 项目简介（Introduction）
 
 **Chat-Studio** 是一个面向个人开发者与 AI 爱好者的多模型对话客户端。  
 项目支持模型接入管理、知识增强、文件管理、系统角色配置、上下文记忆机制等核心功能，  
 全部数据本地存储，配备灵活的后台管理页面，帮助用户定制专属的智能对话体验。
-
 
 ## 🛠️ 技术栈（Tech Stack）
 
@@ -21,7 +19,6 @@
 ## 🧠 核心设计（Core Architecture）
 
 ![核心设计](/img/核心设计.png)
-
 
 ![流程图](/img/流程图.png)
 
@@ -101,6 +98,7 @@ bash start.sh
 📌 默认配置文件路径：`src/main/resources/application.yml`，请根据实际情况配置数据库连接、模型参数等信息。
 
 ### 💻 启动前端服务
+
 ```bash
 cd chat-studio
 npm install -g serve
@@ -108,6 +106,11 @@ serve -s front
 open "http://localhost:3000"
 ```
 
+---
+
+## 📜 许可证 (LICENSE)
+
+本项目采用 MIT License 开源协议。 可自由使用、修改、发布，但须遵守 MIT 许可证的条款和条件！
 
 ---
 
