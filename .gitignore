@@ -25,7 +25,7 @@ chat-studio-app/data/log
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
-/dist/
+/front/
 /nbdist/
 /.nb-gradle/
 build/

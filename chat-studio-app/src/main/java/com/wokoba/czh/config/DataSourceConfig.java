@@ -1,6 +1,6 @@
 package com.wokoba.czh.config;
 
-import com.wokoba.czh.domain.agent.service.memory.RetrievableChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.RetrievableChatChatMemory;
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
@@ -102,8 +102,8 @@ public class DataSourceConfig {
 
 
     @Bean
-    public RetrievableChatMemory retrievableChatMemory(ChatMemoryRepository chatMemoryRepository) {
-        return RetrievableChatMemory.builder()
+    public RetrievableChatChatMemory retrievableChatMemory(ChatMemoryRepository chatMemoryRepository) {
+        return RetrievableChatChatMemory.builder()
                 .chatMemoryRepository(chatMemoryRepository)
                 .build();
     }

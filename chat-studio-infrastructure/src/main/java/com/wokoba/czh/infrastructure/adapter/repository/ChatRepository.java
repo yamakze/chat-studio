@@ -115,7 +115,7 @@ public class ChatRepository implements IChatRepository {
             AiClientMateriel clientVO = AiClientMateriel.builder()
                     .clientId(clientId)
                     .options(objectMapper.readValue(client.getOptions(), AiClientOptionsVO.class))
-                    .systemPromptContent(aiClientSystemPrompts.get(client.getSystemPromptId()))
+                    .systemPromptContent(aiClientSystemPrompts.getOrDefault(client.getSystemPromptId(),"你是一个ai智能体"))
                     .modelId(client.getModelId())
                     .systemPromptId(client.getSystemPromptId())
                     .build();

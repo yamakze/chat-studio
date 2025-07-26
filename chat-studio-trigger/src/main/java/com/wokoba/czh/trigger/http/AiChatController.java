@@ -8,11 +8,11 @@ import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
 import com.wokoba.czh.domain.agent.service.IAiAgentService;
 import com.wokoba.czh.domain.agent.service.chat.AiChatService;
+import com.wokoba.czh.domain.agent.service.memory.CustomChatMemory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -37,7 +37,7 @@ public class AiChatController implements IAiChatApi {
     @Autowired
     private AttachmentProcessor attachmentProcessor;
     @Autowired
-    private ChatMemory chatMemory;
+    private CustomChatMemory chatMemory;
     @Autowired
     private IAiAgentService agentService;
 

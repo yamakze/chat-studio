@@ -6,11 +6,11 @@ import com.alibaba.fastjson2.JSONObject;
 import com.wokoba.czh.domain.agent.model.entity.AiClientAdvisorEntity;
 import com.wokoba.czh.domain.agent.model.entity.ChatEngineStarterEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
-import com.wokoba.czh.domain.agent.service.advisor.ChatContextCorrectionAdvisor;
 import com.wokoba.czh.domain.agent.service.advisor.CustomMediaAdvisor;
+import com.wokoba.czh.domain.agent.service.advisor.MessageEditAdvisor;
 import com.wokoba.czh.domain.agent.service.armory.AbstractArmorySupport;
 import com.wokoba.czh.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
-import com.wokoba.czh.domain.agent.service.memory.RetrievableChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.RetrievableChatChatMemory;
 import com.wokoba.czh.types.common.Constants;
 import com.wokoba.czh.types.framework.tree.IStrategyHandler;
 import jakarta.annotation.Resource;
@@ -40,7 +40,7 @@ public class AiClientAdvisorNode extends AbstractArmorySupport {
     private AttachmentProcessor attachmentProcessor;
 
     @Resource
-    private RetrievableChatMemory retrievableChatMemory;
+    private RetrievableChatChatMemory retrievableChatMemory;
 
     @Override
     protected String doApply(ChatEngineStarterEntity requestParameter, DefaultArmoryStrategyFactory.DynamicContext dynamicContext) throws Exception {
@@ -79,7 +79,7 @@ public class AiClientAdvisorNode extends AbstractArmorySupport {
         switch (advisorType) {
             case "ChatMemory" -> {
                 retrievableChatMemory.mutate(extraParams.getIntValue("maxMessages"), extraParams.getIntValue("retrievableK"));
-                return ChatContextCorrectionAdvisor
+                return MessageEditAdvisor
                         .builder()
                         .memory(retrievableChatMemory)
                         .build();

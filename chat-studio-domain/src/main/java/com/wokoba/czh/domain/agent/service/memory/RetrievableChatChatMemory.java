@@ -1,19 +1,15 @@
 package com.wokoba.czh.domain.agent.service.memory;
 
-import lombok.Setter;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.InMemoryChatMemoryRepository;
 import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public final class RetrievableChatMemory implements ChatMemory {
+public final class RetrievableChatChatMemory implements CustomChatMemory {
 
     private static final int DEFAULT_MAX_MESSAGES = 20;
     private static final int DEFAULT_RETRIEVABLE_K = 10;
@@ -22,7 +18,7 @@ public final class RetrievableChatMemory implements ChatMemory {
     private int maxMessages;
     private int retrievableK;
 
-    private RetrievableChatMemory(ChatMemoryRepository chatMemoryRepository, int maxMessages, int retrievableK) {
+    private RetrievableChatChatMemory(ChatMemoryRepository chatMemoryRepository, int maxMessages, int retrievableK) {
         Assert.notNull(chatMemoryRepository, "chatMemoryRepository cannot be null");
         Assert.isTrue(maxMessages > 0, "maxMessages must be greater than 0");
         Assert.isTrue(retrievableK > 0, "retrievableK must be greater than 0");
@@ -69,15 +65,45 @@ public final class RetrievableChatMemory implements ChatMemory {
         this.chatMemoryRepository.deleteByConversationId(conversationId);
     }
 
-    public void setRetrievableK(int retrievableK) {
-        Assert.isTrue(maxMessages > retrievableK, "maxMessages must be greater than retrievableK");
-        this.retrievableK = retrievableK > 0 ? retrievableK : DEFAULT_RETRIEVABLE_K;
+
+    @Override
+    public Optional<Message> removeLastMessageByType(String conversationId, MessageType messageType) {
+        List<Message> allMessages = chatMemoryRepository.findByConversationId(conversationId);
+        int index = findLastMessageIndexOfType(allMessages, messageType);
+
+        if (index == -1) return Optional.empty();
+
+        Message removed = allMessages.remove(index);
+        chatMemoryRepository.deleteByConversationId(conversationId);
+        chatMemoryRepository.saveAll(conversationId, allMessages);
+        return Optional.of(removed);
     }
 
-    public void setMaxMessages(int maxMessages) {
-        Assert.isTrue(maxMessages > retrievableK, "maxMessages must be greater than retrievableK");
-        this.maxMessages = maxMessages > 0 ? maxMessages : DEFAULT_MAX_MESSAGES;
+    @Override
+    public void removeLastUserAndAssistantMessages(String conversationId) {
+        List<Message> allMessages = chatMemoryRepository.findByConversationId(conversationId);
+
+        int assistantIndex = findLastMessageIndexOfType(allMessages, MessageType.ASSISTANT);
+        int userIndex = findLastMessageIndexOfType(allMessages, MessageType.USER);
+
+        if (assistantIndex == -1 || userIndex == -1) return;
+
+        allMessages.remove(assistantIndex);
+        allMessages.remove(userIndex);
+
+        chatMemoryRepository.deleteByConversationId(conversationId);
+        chatMemoryRepository.saveAll(conversationId, allMessages);
     }
+
+    public int findLastMessageIndexOfType(List<Message> messages, MessageType messageType) {
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            if (messages.get(i).getMessageType() == messageType) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
 
     public void mutate(int maxMessages, int retrievableK) {
         Assert.isTrue(maxMessages > retrievableK, "maxMessages must be greater than retrievableK");
@@ -126,6 +152,7 @@ public final class RetrievableChatMemory implements ChatMemory {
         return new Builder();
     }
 
+
     public static final class Builder {
         private ChatMemoryRepository chatMemoryRepository;
         private int maxMessages = DEFAULT_MAX_MESSAGES;
@@ -149,12 +176,12 @@ public final class RetrievableChatMemory implements ChatMemory {
             return this;
         }
 
-        public RetrievableChatMemory build() {
+        public RetrievableChatChatMemory build() {
             if (this.chatMemoryRepository == null) {
                 this.chatMemoryRepository = new InMemoryChatMemoryRepository();
             }
 
-            return new RetrievableChatMemory(this.chatMemoryRepository, this.maxMessages, this.retrievableK);
+            return new RetrievableChatChatMemory(this.chatMemoryRepository, this.maxMessages, this.retrievableK);
         }
     }
 }
