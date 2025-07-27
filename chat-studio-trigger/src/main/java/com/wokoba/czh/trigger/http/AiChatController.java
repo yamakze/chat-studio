@@ -7,7 +7,7 @@ import com.wokoba.czh.api.dto.ChatResponseDTO;
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
 import com.wokoba.czh.domain.agent.service.chat.AiChatService;
-import com.wokoba.czh.domain.agent.service.memory.CustomChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.DeleteableChatMemory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -36,7 +36,7 @@ public class AiChatController implements IAiChatApi {
     @Autowired
     private AttachmentProcessor attachmentProcessor;
     @Autowired
-    private CustomChatMemory chatMemory;
+    private DeleteableChatMemory chatMemory;
 
 
     /**
@@ -50,6 +50,7 @@ public class AiChatController implements IAiChatApi {
                 .setRagId(requestDTO.getRagId())
                 .setEditActionCode(requestDTO.getEditActionCode())
                 .setClientId(requestDTO.getChatClientId()));
+
         Integer completionTokens = chatResponse.getMetadata().getUsage().getCompletionTokens();
         Integer promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
         Integer totalTokens = chatResponse.getMetadata().getUsage().getTotalTokens();
@@ -131,10 +132,6 @@ public class AiChatController implements IAiChatApi {
     private Message convertToMessage(AiChatContextRequestDTO context, Long clientId) {
         return switch (context.getMessageType().toLowerCase()) {
             case "user" -> {
-//                UserMessage.builder()
-//                        .text(context.getMessage())
-//                        .metadata(Map.of("timestamp", context.getTimestamp()))
-//                        .build();
                 UserMessage userMessage = attachmentProcessor.handleChatAttachments(
                         context.getMessage(),
                         Optional.ofNullable(context.getFilePatten()).orElse("@file:([^\\s]+)"),

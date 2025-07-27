@@ -4,7 +4,6 @@ import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.IAiAgentService;
 import com.wokoba.czh.domain.agent.service.chat.AiChatService;
 import com.wokoba.czh.domain.agent.service.memory.analyzer.MemoryConsolidationService;
-import com.wokoba.czh.domain.agent.service.memory.reflector.MemoryReflectionService;
 import com.wokoba.czh.trigger.job.MemoryReflectorJob;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

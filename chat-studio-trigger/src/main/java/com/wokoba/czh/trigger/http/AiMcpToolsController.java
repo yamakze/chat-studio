@@ -12,7 +12,6 @@ import com.wokoba.czh.infrastructure.dao.AiClientToolMcpDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClientToolConfig;
 import com.wokoba.czh.infrastructure.dao.po.AiClientToolMcp;
 import com.wokoba.czh.types.common.Constants;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

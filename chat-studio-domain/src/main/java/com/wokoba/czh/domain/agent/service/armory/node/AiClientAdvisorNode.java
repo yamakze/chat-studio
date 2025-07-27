@@ -6,7 +6,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.wokoba.czh.domain.agent.model.entity.AiClientAdvisorEntity;
 import com.wokoba.czh.domain.agent.model.entity.ChatEngineStarterEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
-import com.wokoba.czh.domain.agent.service.advisor.CustomMediaAdvisor;
+import com.wokoba.czh.domain.agent.service.advisor.MediaResolveAdvisor;
 import com.wokoba.czh.domain.agent.service.advisor.MessageEditAdvisor;
 import com.wokoba.czh.domain.agent.service.armory.AbstractArmorySupport;
 import com.wokoba.czh.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
@@ -101,7 +101,7 @@ public class AiClientAdvisorNode extends AbstractArmorySupport {
             }
             case "CustomMedia" -> {
                 String filePattern = aiClientAdvisorEntity.getExtraParams().getString("filePattern");
-                return filePattern == null ? new CustomMediaAdvisor(attachmentProcessor) : new CustomMediaAdvisor(attachmentProcessor, filePattern);
+                return filePattern == null ? new MediaResolveAdvisor(attachmentProcessor) : new MediaResolveAdvisor(attachmentProcessor, filePattern);
             }
 
         }

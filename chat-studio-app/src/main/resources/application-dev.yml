@@ -16,7 +16,7 @@ spring:
   ai:
     openai:
       base-url: https://dashscope.aliyuncs.com/compatible-mode
-      api-key: sk-305b1a890c8e44c5882cbc1af3e61c17
+      api-key: sk-dd3cc7e4278441a488b57dfc2cb4af6a
       embedding:
         options:
           model: text-embedding-v3

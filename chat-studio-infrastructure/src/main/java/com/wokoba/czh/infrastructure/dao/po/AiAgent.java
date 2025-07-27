@@ -3,9 +3,7 @@ package com.wokoba.czh.infrastructure.dao.po;
 
 import lombok.Data;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 
 /**
  * AI智能体配置表

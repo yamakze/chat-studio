@@ -8,8 +8,6 @@ import com.wokoba.czh.infrastructure.dao.AiClientDao;
 import com.wokoba.czh.infrastructure.dao.AiClientSystemPromptDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClient;
 import com.wokoba.czh.infrastructure.dao.po.AiClientSystemPrompt;
-import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;

@@ -6,7 +6,7 @@ import org.springframework.ai.chat.messages.MessageType;
 
 import java.util.Optional;
 
-public interface CustomChatMemory extends ChatMemory {
+public interface DeleteableChatMemory extends ChatMemory {
     Optional<Message> removeLastMessageByType(String conversationId, MessageType messageType);
 
     void removeLastUserAndAssistantMessages(String conversationId);

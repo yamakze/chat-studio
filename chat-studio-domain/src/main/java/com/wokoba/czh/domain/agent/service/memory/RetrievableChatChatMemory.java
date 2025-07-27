@@ -9,7 +9,7 @@ import org.springframework.util.Assert;
 
 import java.util.*;
 
-public final class RetrievableChatChatMemory implements CustomChatMemory {
+public final class RetrievableChatChatMemory implements DeleteableChatMemory {
 
     private static final int DEFAULT_MAX_MESSAGES = 20;
     private static final int DEFAULT_RETRIEVABLE_K = 10;

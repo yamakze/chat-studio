@@ -5,10 +5,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.domain.agent.adapter.repository.IChatRepository;
 import com.wokoba.czh.domain.agent.model.entity.*;
-import com.wokoba.czh.domain.agent.model.valobj.*;
+import com.wokoba.czh.domain.agent.model.valobj.AiClientOptionsVO;
 import com.wokoba.czh.infrastructure.dao.*;
 import com.wokoba.czh.infrastructure.dao.po.*;
-import com.wokoba.czh.infrastructure.dao.po.AiClientSystemPrompt;
 import io.micrometer.common.util.StringUtils;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j

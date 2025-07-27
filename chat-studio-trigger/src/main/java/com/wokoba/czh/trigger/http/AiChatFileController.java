@@ -2,7 +2,6 @@ package com.wokoba.czh.trigger.http;
 
 import com.wokoba.czh.api.dto.FileInfoResponseDTO;
 import com.wokoba.czh.types.common.Constants;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;

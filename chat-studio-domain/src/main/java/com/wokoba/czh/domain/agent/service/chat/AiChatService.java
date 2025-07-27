@@ -3,7 +3,7 @@ package com.wokoba.czh.domain.agent.service.chat;
 import com.wokoba.czh.domain.agent.adapter.repository.IChatRepository;
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.IAiChatService;
-import com.wokoba.czh.domain.agent.service.advisor.CustomMediaAdvisor;
+import com.wokoba.czh.domain.agent.service.advisor.MediaResolveAdvisor;
 import com.wokoba.czh.domain.agent.service.advisor.MessageEditAdvisor;
 import com.wokoba.czh.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -49,7 +49,7 @@ public class AiChatService implements IAiChatService {
         spec.advisors(a -> a.param(ChatMemory.CONVERSATION_ID, req.getConversationId())
                 .param(MessageEditAdvisor.RETRY_ACTION_KEY, req.getEditAction()));
         //解析附件上下文
-        spec.advisors(a -> a.param(CustomMediaAdvisor.CLIENT_ID_KEY, req.getClientId()));
+        spec.advisors(a -> a.param(MediaResolveAdvisor.CLIENT_ID_KEY, req.getClientId()));
         // RAG 知识库配置
         if (req.getRagId() != null) {
             String tag = repository.queryRagKnowledgeTag(req.getRagId());

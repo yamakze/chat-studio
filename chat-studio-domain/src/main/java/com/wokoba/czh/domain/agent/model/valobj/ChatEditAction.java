@@ -1,6 +1,6 @@
 package com.wokoba.czh.domain.agent.model.valobj;
 
-import com.wokoba.czh.domain.agent.service.memory.CustomChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.DeleteableChatMemory;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.ai.chat.client.ChatClientRequest;
@@ -17,12 +17,12 @@ public enum ChatEditAction {
     // 默认无操作
     NONE(0, "none", true, true) {
         @Override
-        public ChatClientRequest executeBefore(ChatClientRequest request, CustomChatMemory chatMemory, String conversationId) {
+        public ChatClientRequest executeBefore(ChatClientRequest request, DeleteableChatMemory chatMemory, String conversationId) {
             return request;
         }
 
         @Override
-        public List<Message> executeAfter(List<Message> currentMessages, CustomChatMemory chatMemory, String conversationId) {
+        public List<Message> executeAfter(List<Message> currentMessages, DeleteableChatMemory chatMemory, String conversationId) {
             return currentMessages;
         }
     },
@@ -30,7 +30,7 @@ public enum ChatEditAction {
     // 移除上一次AI回复并重新回答
     RETRY_ASSISTANT_RESPONSE(1, "retryAssistant", false, true) {
         @Override
-        public ChatClientRequest executeBefore(ChatClientRequest request, CustomChatMemory chatMemory, String conversationId) {
+        public ChatClientRequest executeBefore(ChatClientRequest request, DeleteableChatMemory chatMemory, String conversationId) {
             return request.mutate()
                     .prompt(request.prompt().augmentUserMessage(userMessage -> userMessage
                             .mutate()
@@ -40,7 +40,7 @@ public enum ChatEditAction {
         }
 
         @Override
-        public List<Message> executeAfter(List<Message> currentMessages, CustomChatMemory chatMemory, String conversationId) {
+        public List<Message> executeAfter(List<Message> currentMessages, DeleteableChatMemory chatMemory, String conversationId) {
             Optional<Message> message = chatMemory.removeLastMessageByType(conversationId, MessageType.ASSISTANT);
             for (Message assistantMessage : currentMessages) {
                 assistantMessage.getMetadata().put("history", message.get());
@@ -52,13 +52,13 @@ public enum ChatEditAction {
     // 移除上一次用户问题与AI回复，重新提问
     REEDIT_USER_QUESTION(2, "reeditQuestion", true, true) {
         @Override
-        public ChatClientRequest executeBefore(ChatClientRequest request, CustomChatMemory chatMemory, String conversationId) {
+        public ChatClientRequest executeBefore(ChatClientRequest request, DeleteableChatMemory chatMemory, String conversationId) {
             chatMemory.removeLastUserAndAssistantMessages(conversationId);
             return request;
         }
 
         @Override
-        public List<Message> executeAfter(List<Message> currentMessages, CustomChatMemory chatMemory, String conversationId) {
+        public List<Message> executeAfter(List<Message> currentMessages, DeleteableChatMemory chatMemory, String conversationId) {
             return currentMessages;
         }
     },
@@ -66,12 +66,12 @@ public enum ChatEditAction {
     // 继续上次未完成的回答
     PROCEED(3, "proceed", false, true) {
         @Override
-        public ChatClientRequest executeBefore(ChatClientRequest request, CustomChatMemory chatMemory, String conversationId) {
+        public ChatClientRequest executeBefore(ChatClientRequest request, DeleteableChatMemory chatMemory, String conversationId) {
             return request;
         }
 
         @Override
-        public List<Message> executeAfter(List<Message> currentMessages, CustomChatMemory chatMemory, String conversationId) {
+        public List<Message> executeAfter(List<Message> currentMessages, DeleteableChatMemory chatMemory, String conversationId) {
             Optional<Message> removedMessage = chatMemory.removeLastMessageByType(conversationId, MessageType.ASSISTANT);
             return currentMessages.stream()
                     .map(message -> (AssistantMessage) message)
@@ -103,7 +103,7 @@ public enum ChatEditAction {
      * @param chatMemory     聊天记忆体
      * @param conversationId 当前会话ID
      */
-    public abstract ChatClientRequest executeBefore(ChatClientRequest request, CustomChatMemory chatMemory, String conversationId);
+    public abstract ChatClientRequest executeBefore(ChatClientRequest request, DeleteableChatMemory chatMemory, String conversationId);
 
     /**
      * 处理模型新生成的消息。
@@ -113,6 +113,6 @@ public enum ChatEditAction {
      * @param conversationId  当前会话ID
      * @return 已处理的消息集合
      */
-    public abstract List<Message> executeAfter(List<Message> currentMessages, CustomChatMemory chatMemory, String conversationId);
+    public abstract List<Message> executeAfter(List<Message> currentMessages, DeleteableChatMemory chatMemory, String conversationId);
 
 }

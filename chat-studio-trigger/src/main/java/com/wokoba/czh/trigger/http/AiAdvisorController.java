@@ -9,7 +9,6 @@ import com.wokoba.czh.infrastructure.dao.AiClientAdvisorDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClientAdvisor;
 import com.wokoba.czh.infrastructure.dao.po.AiClientAdvisorConfig;
 import com.wokoba.czh.types.common.Constants;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;

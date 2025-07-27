@@ -1,7 +1,7 @@
 package com.wokoba.czh.domain.agent.service.advisor;
 
 import com.wokoba.czh.domain.agent.model.valobj.ChatEditAction;
-import com.wokoba.czh.domain.agent.service.memory.CustomChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.DeleteableChatMemory;
 import org.springframework.ai.chat.client.ChatClientMessageAggregator;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
@@ -24,9 +24,9 @@ public class MessageEditAdvisor implements BaseChatMemoryAdvisor {
 
     private final String conversationId;
     private final int order;
-    private final CustomChatMemory chatMemory;
+    private final DeleteableChatMemory chatMemory;
 
-    public MessageEditAdvisor(String conversationId, CustomChatMemory chatMemory, int order) {
+    public MessageEditAdvisor(String conversationId, DeleteableChatMemory chatMemory, int order) {
         this.conversationId = conversationId;
         this.chatMemory = chatMemory;
         this.order = order;
@@ -85,7 +85,7 @@ public class MessageEditAdvisor implements BaseChatMemoryAdvisor {
 
     public static class Builder {
 
-        private CustomChatMemory chatMemory;
+        private DeleteableChatMemory chatMemory;
 
 
         public MessageEditAdvisor build() {
@@ -94,7 +94,7 @@ public class MessageEditAdvisor implements BaseChatMemoryAdvisor {
             return new MessageEditAdvisor(conversationId, this.chatMemory, order);
         }
 
-        public Builder memory(CustomChatMemory chatMemory) {
+        public Builder memory(DeleteableChatMemory chatMemory) {
             this.chatMemory = chatMemory;
             return this;
         }
