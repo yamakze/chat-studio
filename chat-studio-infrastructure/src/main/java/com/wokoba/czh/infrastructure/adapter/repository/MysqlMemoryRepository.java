@@ -55,13 +55,10 @@ public class MysqlMemoryRepository implements ChatMemoryRepository {
         if (conversationId == null) {
             return null;
         }
-        Map<String, Object> metadata = message.getMetadata();
         SpringAiChatMemory springAiChatMemory = new SpringAiChatMemory();
         springAiChatMemory.setConversationId(conversationId);
         springAiChatMemory.setContent(message.getText());
         springAiChatMemory.setType(message.getMessageType().getValue());
-        springAiChatMemory.setStatus((String) metadata.getOrDefault("status", "created"));
-        springAiChatMemory.setTimestamp((LocalDateTime) metadata.getOrDefault("timestamp", LocalDateTime.now()));
         return springAiChatMemory;
     }
 

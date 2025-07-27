@@ -6,7 +6,6 @@ import com.wokoba.czh.api.dto.AiChatRequestDTO;
 import com.wokoba.czh.api.dto.ChatResponseDTO;
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
-import com.wokoba.czh.domain.agent.service.IAiAgentService;
 import com.wokoba.czh.domain.agent.service.chat.AiChatService;
 import com.wokoba.czh.domain.agent.service.memory.CustomChatMemory;
 import jakarta.validation.Valid;
@@ -38,8 +37,7 @@ public class AiChatController implements IAiChatApi {
     private AttachmentProcessor attachmentProcessor;
     @Autowired
     private CustomChatMemory chatMemory;
-    @Autowired
-    private IAiAgentService agentService;
+
 
     /**
      * 单轮对话
@@ -50,7 +48,7 @@ public class AiChatController implements IAiChatApi {
         ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryActionCode(requestDTO.getRetryActionCode())
+                .setEditActionCode(requestDTO.getEditActionCode())
                 .setClientId(requestDTO.getChatClientId()));
         Integer completionTokens = chatResponse.getMetadata().getUsage().getCompletionTokens();
         Integer promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
@@ -68,7 +66,7 @@ public class AiChatController implements IAiChatApi {
         Flux<ChatResponse> responseFlux = aiChatService.aiChatStream(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryActionCode(requestDTO.getRetryActionCode())
+                .setEditActionCode(requestDTO.getEditActionCode())
                 .setClientId(requestDTO.getChatClientId()));
 
         return ResponseEntity.ok(responseFlux.map(response -> {

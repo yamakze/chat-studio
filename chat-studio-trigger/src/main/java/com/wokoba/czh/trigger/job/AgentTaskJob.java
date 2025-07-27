@@ -2,7 +2,6 @@ package com.wokoba.czh.trigger.job;
 
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiTaskScheduleEntity;
-import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
 import com.wokoba.czh.domain.agent.service.IAiChatService;
 import com.wokoba.czh.domain.agent.service.task.AiAgentTaskService;
 import jakarta.annotation.PostConstruct;

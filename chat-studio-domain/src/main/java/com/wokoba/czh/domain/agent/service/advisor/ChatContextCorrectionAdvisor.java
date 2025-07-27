@@ -1,26 +1,5 @@
 package com.wokoba.czh.domain.agent.service.advisor;
 
-import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
-import org.springframework.ai.chat.client.ChatClientMessageAggregator;
-import org.springframework.ai.chat.client.ChatClientRequest;
-import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
-import org.springframework.ai.chat.client.advisor.api.BaseChatMemoryAdvisor;
-import org.springframework.ai.chat.client.advisor.api.StreamAdvisorChain;
-import org.springframework.ai.chat.memory.ChatMemory;
-import org.springframework.ai.chat.messages.Message;
-import org.springframework.ai.chat.messages.MessageType;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction.*;
-
 
 //public class ChatContextCorrectionAdvisor implements BaseChatMemoryAdvisor {
 //    public static final String RETRY_ACTION_KEY = "retryActionKey";
@@ -43,7 +22,7 @@ import static com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction.*;
 //    @Override
 //    public ChatClientRequest before(ChatClientRequest request, AdvisorChain advisorChain) {
 //        Map<String, Object> context = request.context();
-//        ChatRetryAction retryAction = (ChatRetryAction) context.get(RETRY_ACTION_KEY);
+//        ChatEditAction retryAction = (ChatEditAction) context.get(RETRY_ACTION_KEY);
 //        String conversationId = this.getConversationId(context, this.conversationId);
 //
 //        List<Message> messages = new ArrayList<>(chatMemory.get(conversationId));
