@@ -18,6 +18,7 @@ import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -43,8 +44,8 @@ public class AiChatController implements IAiChatApi {
      * 单轮对话
      */
     @Override
-    @GetMapping
-    public ResponseEntity<ChatResponseDTO> aiChat(@Valid AiChatRequestDTO requestDTO) {
+    @PostMapping
+    public ResponseEntity<ChatResponseDTO> aiChat(@Valid @RequestBody AiChatRequestDTO requestDTO) {
         ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
@@ -62,8 +63,8 @@ public class AiChatController implements IAiChatApi {
      * 流式对话
      */
     @Override
-    @GetMapping("/stream")
-    public ResponseEntity<Flux<ChatResponseDTO>> aiChatStream(@Valid AiChatRequestDTO requestDTO) {
+    @PostMapping("/stream")
+    public ResponseEntity<Flux<ChatResponseDTO>> aiChatStream(@Valid @RequestBody AiChatRequestDTO requestDTO) {
         Flux<ChatResponse> responseFlux = aiChatService.aiChatStream(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
