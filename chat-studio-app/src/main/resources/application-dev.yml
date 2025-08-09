@@ -85,7 +85,8 @@ mybatis-plus:
       id-type: AUTO
 
 # 日志
-logging:
-  level:
-    root: debug
-  config: classpath:logback-spring.xml
+#logging:
+#  level:
+#    root: debug
+#  config: classpath:logback-spring.xml
+

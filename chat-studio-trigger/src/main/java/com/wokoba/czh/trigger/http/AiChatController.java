@@ -63,7 +63,7 @@ public class AiChatController implements IAiChatApi {
      * 流式对话
      */
     @Override
-    @PostMapping("/stream")
+    @PostMapping(value = "/stream", produces = MediaType.APPLICATION_NDJSON_VALUE)
     public ResponseEntity<Flux<ChatResponseDTO>> aiChatStream(@Valid @RequestBody AiChatRequestDTO requestDTO) {
         Flux<ChatResponse> responseFlux = aiChatService.aiChatStream(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
