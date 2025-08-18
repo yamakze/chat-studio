@@ -17,6 +17,8 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,8 +40,8 @@ public class ChatRepository implements IChatRepository {
     private AiClientSystemPromptDao aiClientSystemPromptDao;
     @Resource
     private AiClientAdvisorConfigDao aiClientAdvisorConfigDao;
-
-
+    @Autowired
+    private AiAgentFlowConfigDao aiAgentFlowConfigDao;
     @Resource
     private AiRagOrderDao aiRagOrderDao;
     @Resource
@@ -113,7 +115,7 @@ public class ChatRepository implements IChatRepository {
             AiClientMateriel clientVO = AiClientMateriel.builder()
                     .clientId(clientId)
                     .options(objectMapper.readValue(client.getOptions(), AiClientOptionsVO.class))
-                    .systemPromptContent(aiClientSystemPrompts.getOrDefault(client.getSystemPromptId(),"你是一个ai智能体"))
+                    .systemPromptContent(aiClientSystemPrompts.getOrDefault(client.getSystemPromptId(), "你是一个ai智能体"))
                     .modelId(client.getModelId())
                     .systemPromptId(client.getSystemPromptId())
                     .build();
@@ -269,6 +271,32 @@ public class ChatRepository implements IChatRepository {
                 .build());
     }
 
+    @Override
+    public Map<String, AiAgentClientFlowConfigVO> queryAiAgentClientFlowConfig(String aiAgentId) {
+        if (aiAgentId == null || aiAgentId.trim().isEmpty()) {
+            return Map.of();
+        }
+        // 根据智能体ID查询流程配置列表
+        List<AiAgentFlowConfig> flowConfigs = aiAgentFlowConfigDao.queryByAgentId(aiAgentId);
+
+        if (flowConfigs == null || flowConfigs.isEmpty()) {
+            return Map.of();
+        }
+        // 针对相同的clientId，选择sequence较小的值作为最终结果
+        return flowConfigs.stream()
+                .map(flowConfig -> AiAgentClientFlowConfigVO.builder()
+                        .clientId(flowConfig.getClientId())
+                        .clientName(flowConfig.getClientName())
+                        .clientType(flowConfig.getClientType())
+                        .sequence(flowConfig.getSequence())
+                        .stepPrompt(flowConfig.getStepPrompt())
+                        .build())
+                .collect(Collectors.toMap(
+                        AiAgentClientFlowConfigVO::getClientType, Function.identity(),
+                        BinaryOperator.minBy(Comparator.comparingInt(AiAgentClientFlowConfigVO::getSequence
+                        ))));
+    }
+
     @SneakyThrows
     AiClientToolMcpEntity conversion2AiClientToolMcpVO(AiClientToolMcp aiClientToolMcp) {
         AiClientToolMcpEntity vo = new AiClientToolMcpEntity();
@@ -283,12 +311,6 @@ public class ChatRepository implements IChatRepository {
 
         if ("sse".equals(transportType)) {
             // 解析SSE配置
-            //数据库配置
-            //{
-            //    "zhipu-web-search-sse": {
-            //      "baseUri": "xx"
-            //    }
-            //}
             Map<String, AiClientToolMcpEntity.TransportConfigSse.SseConfig> sseConfigMap = objectMapper.readValue(transportConfig, new TypeReference<Map<String, AiClientToolMcpEntity.TransportConfigSse.SseConfig>>() {
             });
             AiClientToolMcpEntity.TransportConfigSse.SseConfig sseConfig = sseConfigMap.values().stream().findFirst().orElse(null);
@@ -296,10 +318,6 @@ public class ChatRepository implements IChatRepository {
             vo.setTransportConfigSse(new AiClientToolMcpEntity.TransportConfigSse(sseConfigMap));
         } else if ("stdio".equals(transportType)) {
             // 解析STDIO配置
-//            Map<String, AiClientToolMcpEntity.TransportConfigStdio.Stdio> mcpToStdioMap =
-//                    JSON.parseObject(transportConfig,
-//                            new com.alibaba.fastjson.TypeReference<>() {
-//                            });
             Map<String, AiClientToolMcpEntity.TransportConfigStdio.Stdio> mcpToStdioMap = objectMapper.readValue(transportConfig, new TypeReference<Map<String, AiClientToolMcpEntity.TransportConfigStdio.Stdio>>() {
             });
             AiClientToolMcpEntity.TransportConfigStdio.Stdio targetStdio = mcpToStdioMap.values().stream().findFirst().orElse(null);

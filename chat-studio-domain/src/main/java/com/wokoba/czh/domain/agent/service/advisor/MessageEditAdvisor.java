@@ -40,7 +40,7 @@ public class MessageEditAdvisor implements BaseChatMemoryAdvisor {
     @Override
     public ChatClientRequest before(ChatClientRequest request, AdvisorChain advisorChain) {
         Map<String, Object> context = request.context();
-        ChatEditAction editAction = (ChatEditAction) context.get(RETRY_ACTION_KEY);
+        ChatEditAction editAction = (ChatEditAction) context.getOrDefault(RETRY_ACTION_KEY,ChatEditAction.NONE);
         String conversationId = this.getConversationId(context, this.conversationId);
 
         ChatClientRequest processedRequest = editAction.executeBefore(request, chatMemory, conversationId);
@@ -59,7 +59,7 @@ public class MessageEditAdvisor implements BaseChatMemoryAdvisor {
         Map<String, Object> context = chatClientResponse.context();
         List<Message> assistantMessages = chatClientResponse.chatResponse().getResults().stream().map(g -> (Message) g.getOutput()).toList();
         String conversationId = this.getConversationId(context, this.conversationId);
-        ChatEditAction editAction = (ChatEditAction) context.get(RETRY_ACTION_KEY);
+        ChatEditAction editAction = (ChatEditAction) context.getOrDefault(RETRY_ACTION_KEY,ChatEditAction.NONE);
 
         List<Message> processedMessages = editAction.executeAfter(assistantMessages, chatMemory, conversationId);
         if (editAction.getASSISTANTPersistenceFlag())

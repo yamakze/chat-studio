@@ -1,6 +1,5 @@
 package com.wokoba.czh.infrastructure.dao.po;
 
-
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -9,7 +8,7 @@ import java.time.LocalDateTime;
  * 智能体-客户端关联表
  */
 @Data
-public class AiAgentClient {
+public class AiAgentFlowConfig {
 
     /**
      * 主键ID
@@ -27,9 +26,24 @@ public class AiAgentClient {
     private Long clientId;
 
     /**
+     * 客户端名称
+     */
+    private String clientName;
+
+    /**
+     * 客户端类型
+     */
+    private String clientType;
+
+    /**
      * 序列号(执行顺序)
      */
     private Integer sequence;
+
+    /**
+     * 步骤提示词
+     */
+    private String stepPrompt;
 
     /**
      * 创建时间

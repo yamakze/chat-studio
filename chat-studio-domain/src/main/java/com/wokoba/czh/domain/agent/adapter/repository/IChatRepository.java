@@ -3,6 +3,7 @@ package com.wokoba.czh.domain.agent.adapter.repository;
 import com.wokoba.czh.domain.agent.model.entity.*;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IChatRepository {
     List<AiClientModelEntity> queryAiClientModelVOListByClientIds(List<Long> clientIdList);
@@ -34,4 +35,6 @@ public interface IChatRepository {
     void deleteClientById(Long clientId);
 
     void insertTaskExecutionRecord(Long taskId, String request, String response, Integer totalTokens, String status);
+
+    Map<String, AiAgentClientFlowConfigVO> queryAiAgentClientFlowConfig(String aiAgentId);
 }
