@@ -1,6 +1,7 @@
 package com.wokoba.czh.domain.agent.adapter.repository;
 
 import com.wokoba.czh.domain.agent.model.entity.*;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 
 import java.util.List;
 import java.util.Map;

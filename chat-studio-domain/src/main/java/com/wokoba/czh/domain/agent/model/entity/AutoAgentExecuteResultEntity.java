@@ -13,16 +13,8 @@ public class AutoAgentExecuteResultEntity {
 
     /**
      * 数据类型：analysis(分析阶段), execution(执行阶段), supervision(监督阶段), summary(总结阶段), error(错误信息), complete(完成标识)
-     * 细分类型：analysis_status(任务状态分析), analysis_history(执行历史评估), analysis_strategy(下一步策略), analysis_progress(完成度评估)
-     *          execution_target(执行目标), execution_process(执行过程), execution_result(执行结果), execution_quality(质量检查)
-     *          supervision_assessment(质量评估), supervision_issues(问题识别), supervision_suggestions(改进建议), supervision_score(质量评分)
      */
     private String type;
-
-    /**
-     * 子类型标识，用于前端细粒度展示
-     */
-    private String subType;
 
     /**
      * 当前步骤
@@ -66,10 +58,9 @@ public class AutoAgentExecuteResultEntity {
     /**
      * 创建分析阶段细分结果
      */
-    public static AutoAgentExecuteResultEntity createAnalysisSubResult(Integer step, String subType, String content, String sessionId) {
+    public static AutoAgentExecuteResultEntity createAnalysisSubResult(Integer step, String content, String sessionId) {
         return AutoAgentExecuteResultEntity.builder()
                 .type("analysis")
-                .subType(subType)
                 .step(step)
                 .content(content)
                 .completed(false)
@@ -95,10 +86,9 @@ public class AutoAgentExecuteResultEntity {
     /**
      * 创建执行阶段细分结果
      */
-    public static AutoAgentExecuteResultEntity createExecutionSubResult(Integer step, String subType, String content, String sessionId) {
+    public static AutoAgentExecuteResultEntity createExecutionSubResult(Integer step, String content, String sessionId) {
         return AutoAgentExecuteResultEntity.builder()
                 .type("execution")
-                .subType(subType)
                 .step(step)
                 .content(content)
                 .completed(false)
@@ -124,10 +114,9 @@ public class AutoAgentExecuteResultEntity {
     /**
      * 创建监督阶段细分结果
      */
-    public static AutoAgentExecuteResultEntity createSupervisionSubResult(Integer step, String subType, String content, String sessionId) {
+    public static AutoAgentExecuteResultEntity createSupervisionSubResult(Integer step, String content, String sessionId) {
         return AutoAgentExecuteResultEntity.builder()
                 .type("supervision")
-                .subType(subType)
                 .step(step)
                 .content(content)
                 .completed(false)
@@ -139,10 +128,9 @@ public class AutoAgentExecuteResultEntity {
     /**
      * 创建总结阶段细分的结果
      */
-    public static AutoAgentExecuteResultEntity createSummarySubResult(String subType, String content, String sessionId) {
+    public static AutoAgentExecuteResultEntity createSummarySubResult(String content, String sessionId) {
         return AutoAgentExecuteResultEntity.builder()
                 .type("summary")
-                .subType(subType)
                 .step(4)
                 .content(content)
                 .completed(false)

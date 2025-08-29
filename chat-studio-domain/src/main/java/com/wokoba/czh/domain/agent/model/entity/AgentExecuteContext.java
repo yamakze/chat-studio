@@ -1,6 +1,7 @@
 package com.wokoba.czh.domain.agent.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

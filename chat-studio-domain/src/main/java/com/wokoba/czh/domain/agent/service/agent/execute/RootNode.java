@@ -2,9 +2,8 @@ package com.wokoba.czh.domain.agent.service.agent.execute;
 
 import com.wokoba.czh.domain.agent.adapter.repository.IChatRepository;
 import com.wokoba.czh.domain.agent.model.entity.AgentExecuteContext;
-import com.wokoba.czh.domain.agent.model.entity.AiAgentClientFlowConfigVO;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.entity.ExecuteCommandEntity;
-import com.wokoba.czh.domain.agent.model.valobj.AgentContext;
 import com.wokoba.czh.domain.agent.service.agent.AbstractAgentExecuteSupport;
 import com.wokoba.czh.types.framework.tree.IStrategyHandler;
 import jakarta.annotation.Resource;

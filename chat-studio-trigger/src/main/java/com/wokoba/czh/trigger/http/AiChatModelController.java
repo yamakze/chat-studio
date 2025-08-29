@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.api.dto.AiModelRequestDTO;
 import com.wokoba.czh.api.dto.AiModelResponseDTO;
 import com.wokoba.czh.api.group.Groups;
+import com.wokoba.czh.domain.agent.adapter.port.OpenAiService;
 import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
 import com.wokoba.czh.domain.agent.service.IAiAgentPreheatService;
 import com.wokoba.czh.infrastructure.adapter.port.OpenAiPort;
@@ -35,7 +36,7 @@ public class AiChatModelController {
     @Autowired
     private CustomBeanRegistrar customBeanRegistrar;
     @Autowired
-    private OpenAiPort openAiPort;
+    private OpenAiService openAiService;
 
     /**
      * 查询全部模型
@@ -89,7 +90,7 @@ public class AiChatModelController {
 
         AiClientModel aiClientModel = convertToModel(requestDTO);
         if (Objects.isNull(requestDTO.getModelVersion())) {
-            List<String> modelList = openAiPort.modelList(requestDTO.getBaseUrl(), requestDTO.getCompletionsPath(), requestDTO.getApiKey());
+            List<String> modelList = openAiService.modelList(requestDTO.getBaseUrl(), requestDTO.getCompletionsPath(), requestDTO.getApiKey());
             if (modelList.isEmpty()) return ResponseEntity.badRequest().build();
             aiChatModelDao.insertBatch(aiClientModel, modelList);
         } else

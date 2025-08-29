@@ -1,10 +1,11 @@
 package com.wokoba.czh.domain.agent.service.agent.execute;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.wokoba.czh.domain.agent.model.entity.AgentExecuteContext;
-import com.wokoba.czh.domain.agent.model.entity.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.entity.AutoAgentExecuteResultEntity;
 import com.wokoba.czh.domain.agent.model.entity.ExecuteCommandEntity;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientTypeEnumVO;
 import com.wokoba.czh.domain.agent.service.agent.AbstractAgentExecuteSupport;
 import com.wokoba.czh.types.framework.tree.IStrategyHandler;
@@ -30,7 +31,6 @@ public class Step1AnalyzerNode extends AbstractAgentExecuteSupport {
         // 获取配置信息
         AiAgentClientFlowConfigVO aiAgentClientFlowConfigVO = dynamicContext.getAiAgentClientFlowConfigVOMap().get(AiClientTypeEnumVO.TASK_ANALYZER_CLIENT.getCode());
 
-        // 第一阶段：任务分析
         log.info("\n📊 阶段1: 任务状态分析");
         String analysisPrompt = String.format(aiAgentClientFlowConfigVO.getStepPrompt(),
                 requestParameter.getMessage(),
@@ -42,23 +42,23 @@ public class Step1AnalyzerNode extends AbstractAgentExecuteSupport {
 
         ChatClient chatClient = getChatClientByClientId(aiAgentClientFlowConfigVO.getClientId());
 
-        AgentExecuteContext.ExecutionResult analysisResult = chatClient
+        AnalysisResult analysisResult = chatClient
                 .prompt(analysisPrompt)
                 .advisors(a -> a
                         .param(ChatMemory.CONVERSATION_ID, requestParameter.getSessionId()))
-                .call().entity(AgentExecuteContext.ExecutionResult.class);
+                .call().entity(AnalysisResult.class);
 
         assert analysisResult != null;
-        parseAnalysisResult(dynamicContext, analysisResult.outPut(), requestParameter.getSessionId());
 
+        String parseToString = analysisResult.parseToString();
+        sendAnalysisSubResult(dynamicContext, parseToString, requestParameter.getSessionId());
         // 将分析结果保存到动态上下文中，供下一步使用
-        dynamicContext.setValue("analysisResult", analysisResult.outPut());
+        dynamicContext.setValue("AnalysisResult", parseToString);
 
         // 检查是否已完成
         if (analysisResult.taskStatus().equals("COMPLETED")) {
             dynamicContext.setCompleted(true);
             log.info("✅ 任务分析显示已完成！");
-            return router(requestParameter, dynamicContext);
         }
 
         return router(requestParameter, dynamicContext);
@@ -75,96 +75,35 @@ public class Step1AnalyzerNode extends AbstractAgentExecuteSupport {
         return step2PrecisionExecutorNode;
     }
 
-    private void parseAnalysisResult(AgentExecuteContext dynamicContext, String analysisResult, String sessionId) {
-        int step = dynamicContext.getStep();
-        log.info("\n📊 === 第 {} 步分析结果 ===", step);
-
-        String[] lines = analysisResult.split("\n");
-        String currentSection = "";
-        StringBuilder sectionContent = new StringBuilder();
-
-        for (String line : lines) {
-            line = line.trim();
-            if (line.isEmpty()) continue;
-
-            if (line.contains("任务状态分析:")) {
-                // 发送上一个section的内容
-                sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-                currentSection = "analysis_status";
-                sectionContent = new StringBuilder();
-                log.info("\n🎯 任务状态分析:");
-                continue;
-            } else if (line.contains("执行历史评估:")) {
-                // 发送上一个section的内容
-                sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-                currentSection = "analysis_history";
-                sectionContent = new StringBuilder();
-                log.info("\n📈 执行历史评估:");
-                continue;
-            } else if (line.contains("下一步策略:")) {
-                // 发送上一个section的内容
-                sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-                currentSection = "analysis_strategy";
-                sectionContent = new StringBuilder();
-                log.info("\n🚀 下一步策略:");
-                continue;
-            } else if (line.contains("完成度评估:")) {
-                // 发送上一个section的内容
-                sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-                currentSection = "analysis_progress";
-                sectionContent = new StringBuilder();
-                String progress = line.substring(line.indexOf(":") + 1).trim();
-                log.info("\n📊 完成度评估: {}", progress);
-                sectionContent.append(line).append("\n");
-                continue;
-            } else if (line.contains("任务状态:")) {
-                // 发送上一个section的内容
-                sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-                currentSection = "analysis_task_status";
-                sectionContent = new StringBuilder();
-                String status = line.substring(line.indexOf(":") + 1).trim();
-                if (status.equals("COMPLETED")) {
-                    log.info("\n✅ 任务状态: 已完成");
-                } else {
-                    log.info("\n🔄 任务状态: 继续执行");
-                }
-                sectionContent.append(line).append("\n");
-                continue;
-            }
-
-            // 收集当前section的内容
-            if (!currentSection.isEmpty()) {
-                sectionContent.append(line).append("\n");
-                switch (currentSection) {
-                    case "analysis_status":
-                        log.info("   📋 {}", line);
-                        break;
-                    case "analysis_history":
-                        log.info("   📊 {}", line);
-                        break;
-                    case "analysis_strategy":
-                        log.info("   🎯 {}", line);
-                        break;
-                    default:
-                        log.info("   📝 {}", line);
-                        break;
-                }
-            }
-        }
-
-        // 发送最后一个section的内容
-        sendAnalysisSubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
-    }
-
     /**
      * 发送分析阶段细分结果到流式输出
      */
     private void sendAnalysisSubResult(AgentExecuteContext dynamicContext,
-                                       String subType, String content, String sessionId) {
-        if (!subType.isEmpty() && !content.isEmpty()) {
+                                       String content, String sessionId) {
+        if (!content.isEmpty()) {
             AutoAgentExecuteResultEntity result = AutoAgentExecuteResultEntity.createAnalysisSubResult(
-                    dynamicContext.getStep(), subType, content, sessionId);
+                    dynamicContext.getStep(), content, sessionId);
             sendSseResult(dynamicContext, result);
+        }
+    }
+
+    private record AnalysisResult(@JsonProperty("当前任务完成情况的详细分析") String taskAnalysis,
+                                  @JsonProperty("对已完成工作的质量和效果评估") String executionHistoryEvaluation,
+                                  @JsonProperty("具体的执行计划，包括需要调用的工具和生成的内容") String nextStepStrategy,
+                                  @JsonProperty("CONTINUE/COMPLETED") String taskStatus) {
+        String parseToString() {
+
+            String result = "任务状态分析: " + taskAnalysis + "\n" +
+                            "执行历史评估: " + executionHistoryEvaluation + "\n" +
+                            "下一步策略: " + nextStepStrategy + "\n" +
+                            "完成度评估: " +
+                            ("COMPLETED".equalsIgnoreCase(taskStatus) ? "已完成" : "进行中") +
+                            "\n" +
+                            "任务状态: " + taskStatus;
+
+            log.info("解析结果 -> \n{}", result);
+
+            return result;
         }
     }
 

@@ -2,7 +2,7 @@ package com.wokoba.czh.domain.agent.service.agent.execute;
 
 
 import com.wokoba.czh.domain.agent.model.entity.AgentExecuteContext;
-import com.wokoba.czh.domain.agent.model.entity.AiAgentClientFlowConfigVO;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.entity.AutoAgentExecuteResultEntity;
 import com.wokoba.czh.domain.agent.model.entity.ExecuteCommandEntity;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientTypeEnumVO;
@@ -23,15 +23,15 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
 
         // 第四阶段：执行总结
         log.info("\n📊 阶段4: 执行总结分析");
-        
+
         // 记录执行总结
         logExecutionSummary(dynamicContext.getMaxStep(), dynamicContext.getExecutionHistory(), dynamicContext.isCompleted());
-        
+
         // 生成最终总结报告（无论任务是否完成都需要生成）
         generateFinalReport(requestParameter, dynamicContext);
-        
+
         log.info("\n🏁 === 动态多轮执行结束 ====");
-        
+
         return "ai agent execution summary completed!";
     }
 
@@ -40,27 +40,27 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
         // 总结节点是最后一个节点，返回null表示执行结束
         return defaultStrategyHandler;
     }
-    
+
     /**
      * 记录执行总结
      */
     private void logExecutionSummary(int maxSteps, StringBuilder executionHistory, boolean isCompleted) {
         log.info("\n📊 === 动态多轮执行总结 ====");
-        
+
         int actualSteps = Math.min(maxSteps, executionHistory.toString().split("=== 第").length - 1);
         log.info("📈 总执行步数: {} 步", actualSteps);
-        
+
         if (isCompleted) {
             log.info("✅ 任务完成状态: 已完成");
         } else {
             log.info("⏸️ 任务完成状态: 未完成（达到最大步数限制）");
         }
-        
+
         // 计算执行效率
         double efficiency = isCompleted ? 100.0 : (double) actualSteps / maxSteps * 100;
         log.info("📊 执行效率: {}%", efficiency);
     }
-    
+
     /**
      * 生成最终总结报告
      */
@@ -74,7 +74,7 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
             // 获取对话客户端 - 使用任务分析客户端进行总结
             AiAgentClientFlowConfigVO aiAgentClientFlowConfigVO = dynamicContext.getAiAgentClientFlowConfigVOMap().get(AiClientTypeEnumVO.RESPONSE_ASSISTANT.getCode());
             ChatClient chatClient = getChatClientByClientId(aiAgentClientFlowConfigVO.getClientId());
-            
+
             String summaryResult = chatClient
                     .prompt(summaryPrompt)
                     .advisors(a -> a
@@ -83,10 +83,10 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
 
             assert summaryResult != null;
             logFinalReport(dynamicContext, summaryResult, requestParameter.getSessionId());
-            
+
             // 将总结结果保存到动态上下文中
             dynamicContext.setValue("finalSummary", summaryResult);
-            
+
         } catch (Exception e) {
             log.error("生成最终总结报告时出现异常: {}", e.getMessage(), e);
         }
@@ -96,43 +96,43 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
         String summaryPrompt;
         if (isCompleted) {
             summaryPrompt = String.format("""
-                    基于以下执行过程，请直接回答用户的原始问题，提供最终的答案和结果：
-                    
-                    **用户原始问题:** %s
-                    
-                    **执行历史和过程:**
-                    %s
-                    
-                    **要求:**
-                    1. 直接回答用户的原始问题
-                    2. 基于执行过程中获得的信息和结果
-                    3. 提供具体、实用的最终答案
-                    4. 如果是要求制定计划、列表等，请直接给出完整的内容
-                    5. 避免只描述执行过程，重点是最终答案
-                    6. 以MD语法的表格形式，优化展示结果数据
-                    
-                    请直接给出用户问题的最终答案：
-                    """,
+                            基于以下执行过程，请直接回答用户的原始问题，提供最终的答案和结果：
+                            
+                            **用户原始问题:** %s
+                            
+                            **执行历史和过程:**
+                            %s
+                            
+                            **要求:**
+                            1. 直接回答用户的原始问题
+                            2. 基于执行过程中获得的信息和结果
+                            3. 提供具体、实用的最终答案
+                            4. 如果是要求制定计划、列表等，请直接给出完整的内容
+                            5. 避免只描述执行过程，重点是最终答案
+                            6. 以MD语法的表格形式，优化展示结果数据
+                            
+                            请直接给出用户问题的最终答案：
+                            """,
                     requestParameter.getMessage(),
                     dynamicContext.getExecutionHistory().toString());
         } else {
             summaryPrompt = String.format("""
-                    虽然任务未完全执行完成，但请基于已有的执行过程，尽力回答用户的原始问题：
-                    
-                    **用户原始问题:** %s
-                    
-                    **已执行的过程和获得的信息:**
-                    %s
-                    
-                    **要求:**
-                    1. 基于已有信息，尽力回答用户的原始问题
-                    2. 如果信息不足，说明哪些部分无法完成并给出原因
-                    3. 提供已能确定的部分答案
-                    4. 给出完成剩余部分的具体建议
-                    5. 以MD语法的表格形式，优化展示结果数据
-                    
-                    请基于现有信息给出用户问题的答案：
-                    """,
+                            虽然任务未完全执行完成，但请基于已有的执行过程，尽力回答用户的原始问题：
+                            
+                            **用户原始问题:** %s
+                            
+                            **已执行的过程和获得的信息:**
+                            %s
+                            
+                            **要求:**
+                            1. 基于已有信息，尽力回答用户的原始问题
+                            2. 如果信息不足，说明哪些部分无法完成并给出原因
+                            3. 提供已能确定的部分答案
+                            4. 给出完成剩余部分的具体建议
+                            5. 以MD语法的表格形式，优化展示结果数据
+                            
+                            请基于现有信息给出用户问题的答案：
+                            """,
                     requestParameter.getMessage(),
                     dynamicContext.getExecutionHistory().toString());
         }
@@ -149,28 +149,28 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
         String[] lines = summaryResult.split("\n");
         String currentSection = "summary_overview";
         StringBuilder sectionContent = new StringBuilder();
-        
+
         for (String line : lines) {
             line = line.trim();
             if (line.isEmpty()) continue;
-            
+
             // 检测是否开始新的总结部分
             String newSection = detectSummarySection(line);
             if (newSection != null && !newSection.equals(currentSection)) {
                 // 发送前一个部分的内容
                 if (!sectionContent.isEmpty()) {
-                    sendSummarySubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
+//                    sendSummarySubResult(dynamicContext, sectionContent.toString(), sessionId);
                 }
                 currentSection = newSection;
                 sectionContent.setLength(0);
             }
-            
+
             // 收集当前部分的内容
             if (!sectionContent.isEmpty()) {
                 sectionContent.append("\n");
             }
             sectionContent.append(line);
-            
+
             // 根据内容类型添加不同图标
             if (line.contains("已完成") || line.contains("完成的工作")) {
                 log.info("✅ {}", line);
@@ -184,39 +184,30 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
                 log.info("📝 {}", line);
             }
         }
-        
+
         // 发送最后一个部分的内容
         if (!sectionContent.isEmpty()) {
-            sendSummarySubResult(dynamicContext, currentSection, sectionContent.toString(), sessionId);
+//            sendSummarySubResult(dynamicContext, sectionContent.toString(), sessionId);
         }
-        
+
         // 发送完整的总结结果
         sendSummaryResult(dynamicContext, summaryResult, sessionId);
-        
+
         // 发送完成标识
         sendCompleteResult(dynamicContext, sessionId);
     }
-    
+
     /**
      * 发送总结结果到流式输出
      */
     private void sendSummaryResult(AgentExecuteContext dynamicContext,
-                                 String summaryResult, String sessionId) {
+                                   String summaryResult, String sessionId) {
         AutoAgentExecuteResultEntity result = AutoAgentExecuteResultEntity.createSummaryResult(
-                 summaryResult, sessionId);
+                summaryResult, sessionId);
         sendSseResult(dynamicContext, result);
     }
-    
-    /**
-     * 发送总结阶段细分结果到流式输出
-     */
-    private void sendSummarySubResult(AgentExecuteContext dynamicContext,
-                                     String subType, String content, String sessionId) {
-        AutoAgentExecuteResultEntity result = AutoAgentExecuteResultEntity.createSummarySubResult(
-                subType, content, sessionId);
-        sendSseResult(dynamicContext, result);
-    }
-    
+
+
     /**
      * 发送完成标识到流式输出
      */
@@ -225,7 +216,7 @@ public class Step4LogExecutionSummaryNode extends AbstractAgentExecuteSupport {
         sendSseResult(dynamicContext, result);
         log.info("✅ 已发送完成标识");
     }
-    
+
     /**
      * 检测总结部分标识
      */

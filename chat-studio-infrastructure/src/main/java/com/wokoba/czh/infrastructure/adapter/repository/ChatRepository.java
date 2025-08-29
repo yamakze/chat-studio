@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.domain.agent.adapter.repository.IChatRepository;
 import com.wokoba.czh.domain.agent.model.entity.*;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientOptionsVO;
 import com.wokoba.czh.infrastructure.dao.*;
 import com.wokoba.czh.infrastructure.dao.po.*;

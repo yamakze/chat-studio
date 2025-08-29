@@ -1,4 +1,4 @@
-package com.wokoba.czh.domain.agent.model.entity;
+package com.wokoba.czh.domain.agent.model.valobj;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
