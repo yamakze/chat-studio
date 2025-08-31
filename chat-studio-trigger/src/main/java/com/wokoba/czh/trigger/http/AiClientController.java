@@ -4,12 +4,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.api.dto.AiClientConfigRequestDTO;
 import com.wokoba.czh.api.dto.AiClientResponseDTO;
+import com.wokoba.czh.domain.agent.model.entity.AiClientEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiClientMateriel;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientOptionsVO;
 import com.wokoba.czh.domain.agent.service.client.AiClientService;
-import com.wokoba.czh.infrastructure.dao.AiClientAdvisorConfigDao;
 import com.wokoba.czh.infrastructure.dao.AiClientDao;
-import com.wokoba.czh.infrastructure.dao.AiClientToolConfigDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClient;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
@@ -28,10 +27,6 @@ import java.util.Objects;
 public class AiClientController {
     @Autowired
     private AiClientDao aiClientDao;
-    @Autowired
-    private AiClientAdvisorConfigDao aiClientAdvisorConfigDao;
-    @Autowired
-    private AiClientToolConfigDao aiClientToolConfigDao;
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
@@ -67,7 +62,6 @@ public class AiClientController {
     public ResponseEntity<String> updateAiClientConfig(@RequestBody @Validated AiClientConfigRequestDTO requestDTO) {
         Long clientId = requestDTO.getClientId();
         try {
-
             log.info("开始更新AI客户端配置，clientId:{}", clientId);
             aiClientService.changeAiClientConfig(AiClientMateriel.builder()
                     .advisorIdList(requestDTO.getAdvisorIds())
@@ -75,6 +69,7 @@ public class AiClientController {
                     .systemPromptId(requestDTO.getSystemPromptId())
                     .mcpIdList(requestDTO.getMcpIds())
                     .modelId(requestDTO.getModelId())
+                    .modelVersion(requestDTO.getModelVersion())
                     .options(objectMapper.convertValue(requestDTO.getOptions(), AiClientOptionsVO.class))
                     .build());
             return ResponseEntity.ok("更新AI客户端配置成功");
@@ -117,24 +112,12 @@ public class AiClientController {
      */
     @GetMapping("/{clientId}")
     public ResponseEntity<AiClientResponseDTO> getAiClientById(@PathVariable Long clientId) {
-        AiClient client = aiClientDao.selectById(clientId);
-        if (client == null) {
-            return ResponseEntity.notFound().build();
-        }
-        List<Long> advisorIdList = aiClientAdvisorConfigDao.queryAdvisorIdsByClientIds(List.of(clientId));
-        List<Long> mcpIdList = aiClientToolConfigDao.queryMcpIdsByClientIds(List.of(clientId));
-
-        AiClientResponseDTO aiClientResponseDTO = new AiClientResponseDTO();
-        aiClientResponseDTO.setId(client.getId());
-        aiClientResponseDTO.setModelId(client.getModelId());
-        aiClientResponseDTO.setOptionsJsonStr(client.getOptions());
-        aiClientResponseDTO.setSystemPromptId(client.getSystemPromptId());
-        aiClientResponseDTO.setClientName(client.getClientName());
-        aiClientResponseDTO.setDescription(client.getDescription());
-        aiClientResponseDTO.setAdvisorIds(advisorIdList);
-        aiClientResponseDTO.setMcpIds(mcpIdList);
+        log.info("查询client详情开始 clientId:{}", clientId);
+        AiClientEntity clientEntity = aiClientService.getClientEntityById(clientId);
+        AiClientResponseDTO aiClientResponseDTO = convertToClientResponse(clientEntity);
         return ResponseEntity.ok(aiClientResponseDTO);
     }
+
 
     /**
      * 创建客户端
@@ -155,5 +138,19 @@ public class AiClientController {
         aiClientService.destroy(clientId);
         return ResponseEntity.ok("删除client成功");
     }
+
+    private static AiClientResponseDTO convertToClientResponse(AiClientEntity clientEntity) {
+        AiClientResponseDTO aiClientResponseDTO = new AiClientResponseDTO();
+        aiClientResponseDTO.setId(clientEntity.getClientId());
+        aiClientResponseDTO.setModelId(clientEntity.getModelId());
+        aiClientResponseDTO.setOptionsJsonStr(clientEntity.getOptions());
+        aiClientResponseDTO.setSystemPromptId(clientEntity.getSystemPromptId());
+        aiClientResponseDTO.setClientName(clientEntity.getClientName());
+        aiClientResponseDTO.setDescription(clientEntity.getDescription());
+        aiClientResponseDTO.setAdvisorIds(clientEntity.getAdvisorIdList());
+        aiClientResponseDTO.setMcpIds(clientEntity.getMcpIdList());
+        return aiClientResponseDTO;
+    }
+
 }
 

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
-public class AiClientModel  {
+public class AiClientModel {
 
     /**
      * 主键ID
@@ -39,11 +39,6 @@ public class AiClientModel  {
     private String modelType;
 
     /**
-     * 模型版本
-     */
-    private String modelVersion;
-
-    /**
      * 超时时间(秒)
      */
     private Integer timeout;
@@ -63,4 +58,7 @@ public class AiClientModel  {
      */
     private LocalDateTime updateTime;
 
+    public String getCompletionsUrl() {
+        return baseUrl + completionsPath;
+    }
 }

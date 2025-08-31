@@ -35,6 +35,10 @@
             <groupId>com.wokoba.czh</groupId>
             <artifactId>chat-studio-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.wokoba.czh</groupId>
+            <artifactId>chat-studio-domain</artifactId>
+        </dependency>
 
     </dependencies>
 

@@ -76,9 +76,6 @@ public class AiClientModelNode extends AbstractArmorySupport {
         // 构建OpenAiChatModel
         return OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
-                .defaultOptions(OpenAiChatOptions.builder()
-                        .model(model.getModelVersion())
-                        .build())
                 .build();
     }
 

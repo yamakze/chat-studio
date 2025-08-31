@@ -39,7 +39,7 @@ public class RootNode extends AbstractArmorySupport {
 
         CompletableFuture<List<AiClientMateriel>> aiClientListFuture = CompletableFuture.supplyAsync(() -> {
             log.info("查询配置数据(ai_client) {}", requestParameter.getClientIdList());
-            return repository.queryAiClientByClientIds(requestParameter.getClientIdList());
+            return repository.queryClientMaterielByClientIds(requestParameter.getClientIdList());
         }, threadPoolExecutor);
 
         CompletableFuture.allOf(aiClientToolMcpListFuture, aiClientAdvisorListFuture, aiClientListFuture)

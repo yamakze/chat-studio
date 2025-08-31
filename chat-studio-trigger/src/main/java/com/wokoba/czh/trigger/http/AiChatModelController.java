@@ -7,11 +7,12 @@ import com.wokoba.czh.api.group.Groups;
 import com.wokoba.czh.domain.agent.adapter.port.OpenAiService;
 import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
 import com.wokoba.czh.domain.agent.service.IAiAgentPreheatService;
-import com.wokoba.czh.infrastructure.adapter.port.OpenAiPort;
 import com.wokoba.czh.infrastructure.dao.AiChatModelDao;
 import com.wokoba.czh.infrastructure.dao.AiClientDao;
+import com.wokoba.czh.infrastructure.dao.AiClientModelConfigDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClient;
 import com.wokoba.czh.infrastructure.dao.po.AiClientModel;
+import com.wokoba.czh.infrastructure.dao.po.AiClientModelConfig;
 import com.wokoba.czh.types.common.Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/model")
@@ -37,6 +40,9 @@ public class AiChatModelController {
     private CustomBeanRegistrar customBeanRegistrar;
     @Autowired
     private OpenAiService openAiService;
+    @Autowired
+    private AiClientModelConfigDao aiClientModelConfigDao;
+
 
     /**
      * 查询全部模型
@@ -87,15 +93,8 @@ public class AiChatModelController {
     @PostMapping
     public ResponseEntity<String> createModel(@RequestBody @Validated(Groups.Create.class) AiModelRequestDTO requestDTO) {
         log.info("新增chatModel request:{}", requestDTO);
-
         AiClientModel aiClientModel = convertToModel(requestDTO);
-        if (Objects.isNull(requestDTO.getModelVersion())) {
-            List<String> modelList = openAiService.modelList(requestDTO.getBaseUrl(), requestDTO.getCompletionsPath(), requestDTO.getApiKey());
-            if (modelList.isEmpty()) return ResponseEntity.badRequest().build();
-            aiChatModelDao.insertBatch(aiClientModel, modelList);
-        } else
-            aiChatModelDao.insert(aiClientModel);
-
+        aiChatModelDao.insert(aiClientModel);
         return ResponseEntity.ok("新增model成功");
     }
 
@@ -111,10 +110,10 @@ public class AiChatModelController {
             AiClientModel aiClientModel = convertToModel(requestDTO);
 
             aiChatModelDao.updateById(aiClientModel);
-            List<AiClient> aiClients = aiClientDao.queryAiClientsByModelId(modelId);
+            List<Long> clientIds = aiClientModelConfigDao.queryAiClientIdsByModelId(modelId);
 
             customBeanRegistrar.clearBean(Constants.BeanName.MODEL + modelId);
-            aiAgentPreheatService.preheat(aiClients.stream().map(AiClient::getId).toArray(Long[]::new));
+            aiAgentPreheatService.preheat(clientIds.toArray(Long[]::new));
 
             return ResponseEntity.ok("更新model成功");
         } catch (Exception e) {
@@ -129,13 +128,9 @@ public class AiChatModelController {
     @PutMapping("/status")
     public ResponseEntity<Boolean> changeModelStatus(@RequestParam @NotNull Long modelId) {
         log.info("变更模型状态开始 modelId:{}", modelId);
-        Long clientCount = aiClientDao.selectCount(Wrappers.lambdaQuery(AiClient.class)
-                .eq(AiClient::getModelId, modelId));
-
+        int clientCount = aiClientDao.countByModelInUse(modelId);
         if (clientCount > 0) return ResponseEntity.ok(false);
-        AiClientModel aiClientModel = aiChatModelDao.selectById(modelId);
-        aiClientModel.setStatus(aiClientModel.getStatus().equals(1) ? 0 : 1);
-        aiChatModelDao.updateById(aiClientModel);
+        aiChatModelDao.toggleStatus(modelId);
         return ResponseEntity.ok(true);
     }
 
@@ -145,6 +140,7 @@ public class AiChatModelController {
     @DeleteMapping
     public ResponseEntity<Boolean> deleteModel(@RequestParam @NotNull Long modelId) {
         log.info("删除模型开始 modelId:{}", modelId);
+        aiClientModelConfigDao.delete(Wrappers.lambdaQuery(AiClientModelConfig.class).eq(AiClientModelConfig::getModelId, modelId));
         int delete = aiChatModelDao.delete(Wrappers.<AiClientModel>lambdaQuery()
                 .eq(AiClientModel::getId, modelId)
                 .eq(AiClientModel::getStatus, 0));
@@ -159,10 +155,11 @@ public class AiChatModelController {
         if (clientModel == null) {
             return null;
         }
+        List<String> modelVersionList = openAiService.modelList(clientModel.getBaseUrl() + clientModel.getCompletionsPath(), clientModel.getApiKey());
         AiModelResponseDTO aiModelResponseDTO = new AiModelResponseDTO();
         aiModelResponseDTO.setId(clientModel.getId());
-        aiModelResponseDTO.setModelVersion(clientModel.getModelVersion());
         aiModelResponseDTO.setModelName(clientModel.getModelName());
+        aiModelResponseDTO.setModelVersionList(modelVersionList);
         return aiModelResponseDTO;
     }
 
@@ -177,7 +174,6 @@ public class AiChatModelController {
         aiClientModel.setApiKey(requestDTO.getApiKey());
         aiClientModel.setCompletionsPath(requestDTO.getCompletionsPath());
         aiClientModel.setModelType(requestDTO.getModelType());
-        aiClientModel.setModelVersion(requestDTO.getModelVersion());
         aiClientModel.setTimeout(requestDTO.getTimeout());
         return aiClientModel;
     }

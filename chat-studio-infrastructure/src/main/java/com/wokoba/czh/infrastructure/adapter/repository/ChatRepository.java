@@ -1,15 +1,19 @@
 package com.wokoba.czh.infrastructure.adapter.repository;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.domain.agent.adapter.repository.IChatRepository;
 import com.wokoba.czh.domain.agent.model.entity.*;
 import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientOptionsVO;
+import com.wokoba.czh.domain.agent.model.valobj.AiClientVO;
+import com.wokoba.czh.infrastructure.adapter.port.OpenAiPort;
 import com.wokoba.czh.infrastructure.dao.*;
 import com.wokoba.czh.infrastructure.dao.po.*;
-import io.micrometer.common.util.StringUtils;
+import com.wokoba.czh.types.enums.ResponseCode;
+import com.wokoba.czh.types.exception.AppException;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +60,10 @@ public class ChatRepository implements IChatRepository {
     private AiAgentTaskScheduleDao aiAgentTaskScheduleDao;
     @Autowired
     private AiTaskExecutionRecordDao aiTaskExecutionRecordDao;
+    @Autowired
+    private AiClientModelConfigDao aiClientModelConfigDao;
+    @Autowired
+    private OpenAiPort openAiPort;
 
     @Override
     public List<AiClientModelEntity> queryAiClientModelVOListByClientIds(List<Long> clientIdList) {
@@ -81,23 +89,27 @@ public class ChatRepository implements IChatRepository {
 
     @SneakyThrows
     @Override
-    public List<AiClientMateriel> queryAiClientByClientIds(List<Long> clientIdList) {
+    public List<AiClientMateriel> queryClientMaterielByClientIds(List<Long> clientIdList) {
         if (null == clientIdList || clientIdList.isEmpty()) {
             return Collections.emptyList();
         }
         List<AiClient> clientList = aiClientDao.selectBatchIds(clientIdList);
+        //查询模型配置
+        Map<Long, AiClientModelConfig> modelConfigMap = aiClientModelConfigDao.selectList(Wrappers.lambdaQuery(AiClientModelConfig.class)
+                        .in(AiClientModelConfig::getId, clientList.stream().map(AiClient::getModelConfigId).toList()))
+                .stream()
+                .collect(Collectors.toMap(AiClientModelConfig::getId, Function.identity()));
         //查询提示词
-        Map<Long, String> aiClientSystemPrompts = aiClientSystemPromptDao.selectList(Wrappers.<AiClientSystemPrompt>lambdaQuery()
+        Map<Long, String> aiClientSystemPromptMap = aiClientSystemPromptDao.selectList(Wrappers.<AiClientSystemPrompt>lambdaQuery()
                         .in(AiClientSystemPrompt::getId, clientList.stream().map(AiClient::getSystemPromptId).collect(Collectors.toSet()))
                         .orderByDesc(AiClientSystemPrompt::getCreateTime)
                         .eq(AiClientSystemPrompt::getStatus, 1))
                 .stream()
                 .collect(Collectors.toMap(
-                        AiClientSystemPrompt::getId,  // key: id
-                        AiClientSystemPrompt::getPromptContent,        // value: AiClientSystemPromptContent
-                        (existing, replacement) -> existing  // 如果有重复key，保留第一个
+                        AiClientSystemPrompt::getId,
+                        AiClientSystemPrompt::getPromptContent
                 ));
-        ;
+
         // 查询MCP工具配置，暂时只有 mcp，无 function call
         List<AiClientToolConfig> clientToolConfigs = aiClientToolConfigDao.queryToolConfigByClientIds(clientIdList);
         Map<Long, List<AiClientToolConfig>> mcpMap = clientToolConfigs.stream()
@@ -113,11 +125,15 @@ public class ChatRepository implements IChatRepository {
         List<AiClientMateriel> result = new ArrayList<>();
         for (AiClient client : clientList) {
             Long clientId = client.getId();
+            AiClientModelConfig aiClientModelConfig = modelConfigMap.getOrDefault(client.getModelConfigId(), modelConfigMap.values().stream().findFirst().orElseThrow());
+
+            //设置客户端基础配置
             AiClientMateriel clientVO = AiClientMateriel.builder()
                     .clientId(clientId)
-                    .options(objectMapper.readValue(client.getOptions(), AiClientOptionsVO.class))
-                    .systemPromptContent(aiClientSystemPrompts.getOrDefault(client.getSystemPromptId(), "你是一个ai智能体"))
-                    .modelId(client.getModelId())
+                    .options(objectMapper.readValue(aiClientModelConfig.getOptions(), AiClientOptionsVO.class))
+                    .systemPromptContent(aiClientSystemPromptMap.getOrDefault(client.getSystemPromptId(), "你是一个ai智能体"))
+                    .modelId(aiClientModelConfig.getModelId())
+                    .modelVersion(aiClientModelConfig.getModelVersion())
                     .systemPromptId(client.getSystemPromptId())
                     .build();
             // 设置MCP工具ID列表
@@ -166,23 +182,36 @@ public class ChatRepository implements IChatRepository {
     }
 
     @Override
-    public void updateClientConfig(Long clientId, Long systemPromptId, Long modelId, List<Long> mcpIdList, List<Long> advisorIdList, String optionsJsonStr) {
+    public void updateClientConfig(AiClientMateriel materiel) {
+        Long clientId = materiel.getClientId();
+        List<Long> advisorIdList = materiel.getAdvisorIdList();
+        List<Long> mcpIdList = materiel.getMcpIdList();
         transactionTemplate.executeWithoutResult(status -> {
-            if (advisorIdList != null) {
-                aiClientAdvisorConfigDao.deleteBatchByClientId(clientId);
-                if (!advisorIdList.isEmpty())
-                    aiClientAdvisorConfigDao.insertBatch(clientId, advisorIdList);
+            try {
+                if (advisorIdList != null) {
+                    aiClientAdvisorConfigDao.deleteBatchByClientId(clientId);
+                    if (!advisorIdList.isEmpty())
+                        aiClientAdvisorConfigDao.insertBatch(clientId, advisorIdList);
+                }
+                if (mcpIdList != null) {
+                    aiClientToolConfigDao.deleteBatchByClientId(clientId);
+                    if (!mcpIdList.isEmpty())
+                        aiClientToolConfigDao.insertBatch(clientId, mcpIdList);
+                }
+
+                int modelConfigId = upsertModelConfig(materiel);
+
+                aiClientDao.update(Wrappers.lambdaUpdate(AiClient.class)
+                        .eq(AiClient::getId, clientId)
+                        .set(AiClient::getSystemPromptId, materiel.getSystemPromptId())
+                        .set(AiClient::getModelConfigId, modelConfigId));
+            } catch (JsonProcessingException e) {
+                log.error("modelConfig options Json 序列化失败，clientId={}", clientId, e);
+                status.setRollbackOnly();
+            } catch (Exception e) {
+                log.error("更新客户端配置失败，clientId={}", clientId, e);
+                status.setRollbackOnly();
             }
-            if (mcpIdList != null) {
-                aiClientToolConfigDao.deleteBatchByClientId(clientId);
-                if (!mcpIdList.isEmpty())
-                    aiClientToolConfigDao.insertBatch(clientId, mcpIdList);
-            }
-            aiClientDao.update(Wrappers.lambdaUpdate(AiClient.class)
-                    .eq(AiClient::getId, clientId)
-                    .set(AiClient::getModelId, modelId)
-                    .set(StringUtils.isNotBlank(optionsJsonStr), AiClient::getOptions, optionsJsonStr)
-                    .set(AiClient::getSystemPromptId, systemPromptId));
         });
     }
 
@@ -201,16 +230,21 @@ public class ChatRepository implements IChatRepository {
                 .orderByAsc(AiClientSystemPrompt::getCreateTime)
                 .last("limit 1")).getId();
 
-        Long defaultModelId = aiChatModelDao.selectOne(Wrappers
+        AiClientModel aiClientModel = aiChatModelDao.selectOne(Wrappers
                 .lambdaQuery(AiClientModel.class)
                 .select(AiClientModel::getId)
                 .orderByAsc(AiClientModel::getCreateTime)
-                .last("limit 1")).getId();
+                .last("limit 1"));
+
+        if (Objects.isNull(aiClientModel)) throw new AppException(ResponseCode.AI_MODEL_MISSING);
+        List<String> modelVersionList = openAiPort.modelList(aiClientModel.getBaseUrl(), aiClientModel.getApiKey());
+        if (modelVersionList.isEmpty()) throw new AppException(ResponseCode.MODEL_SUPPLIER_EXCEPTION);
 
         return AiClientMateriel.builder()
                 .advisorIdList(advisorIdList)
                 .mcpIdList(mcpIdList)
-                .modelId(defaultModelId)
+                .modelId(aiClientModel.getId())
+                .modelVersion(modelVersionList.get(0))
                 .systemPromptId(defaultPromptId)
                 .build();
     }
@@ -258,6 +292,7 @@ public class ChatRepository implements IChatRepository {
             aiClientDao.deleteById(clientId);
             aiClientAdvisorConfigDao.delete(Wrappers.lambdaQuery(AiClientAdvisorConfig.class).eq(AiClientAdvisorConfig::getClientId, clientId));
             aiClientToolConfigDao.delete(Wrappers.lambdaQuery(AiClientToolConfig.class).eq(AiClientToolConfig::getClientId, clientId));
+            aiClientModelConfigDao.delete(Wrappers.lambdaQuery(AiClientModelConfig.class).eq(AiClientModelConfig::getClientId, clientId));
         });
     }
 
@@ -298,6 +333,12 @@ public class ChatRepository implements IChatRepository {
                         ))));
     }
 
+    @Override
+    public AiClientVO queryClientBasicInfoById(Long clientId) {
+        AiClient aiClient = aiClientDao.selectById(clientId);
+        return new AiClientVO(clientId, aiClient.getClientName(), aiClient.getDescription(), aiClient.getStatus());
+    }
+
     @SneakyThrows
     AiClientToolMcpEntity conversion2AiClientToolMcpVO(AiClientToolMcp aiClientToolMcp) {
         AiClientToolMcpEntity vo = new AiClientToolMcpEntity();
@@ -334,4 +375,14 @@ public class ChatRepository implements IChatRepository {
         return vo;
     }
 
+    private int upsertModelConfig(AiClientMateriel materiel) throws JsonProcessingException {
+        return aiClientModelConfigDao.upsertByClientIdAndModelIdAndVersion(
+                AiClientModelConfig.builder()
+                        .clientId(materiel.getClientId())
+                        .modelId(materiel.getModelId())
+                        .modelVersion(materiel.getModelVersion())
+                        .options(objectMapper.writeValueAsString(materiel.getOptions()))
+                        .build()
+        );
+    }
 }

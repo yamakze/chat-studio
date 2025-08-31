@@ -44,11 +44,6 @@ public class AiClientModelEntity {
     private String modelType;
 
     /**
-     * 模型版本
-     */
-    private String modelVersion;
-
-    /**
      * 超时时间(秒)
      */
     private Integer timeout;

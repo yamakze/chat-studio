@@ -8,6 +8,7 @@ import java.util.List;
 public class AiClientResponseDTO {
     private Long id;
     private Long modelId;
+    private String modelVersion;
     private Long systemPromptId;
     private List<Long> mcpIds;
     private List<Long> advisorIds;

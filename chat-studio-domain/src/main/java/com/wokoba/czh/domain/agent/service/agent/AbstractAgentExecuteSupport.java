@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+
+//TODO ReACT模式待完善
 public abstract class AbstractAgentExecuteSupport extends AbstractMultiThreadStrategyRouter<ExecuteCommandEntity, AgentExecuteContext, String> {
     @Resource
     private ApplicationContext applicationContext;

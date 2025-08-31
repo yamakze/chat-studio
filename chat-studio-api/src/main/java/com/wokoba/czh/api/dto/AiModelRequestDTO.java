@@ -1,9 +1,7 @@
 package com.wokoba.czh.api.dto;
 
 import com.wokoba.czh.api.group.Groups;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Null;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -45,14 +43,11 @@ public class AiModelRequestDTO {
     @NotBlank
     private String modelType;
 
-    /**
-     * 模型版本
-     */
-    @NotBlank(groups = Groups.Update.class,message = "更新时模型版本不能为空")
-    private String modelVersion;
 
     /**
      * 超时时间(秒)
      */
+    @Min(10)
+    @Max(60 * 60 * 24)
     private Integer timeout;
 }
