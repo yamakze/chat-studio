@@ -4,12 +4,13 @@ import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClientRequest;
 import org.springframework.ai.chat.client.ChatClientResponse;
-import org.springframework.ai.chat.client.advisor.api.*;
+import org.springframework.ai.chat.client.advisor.api.AdvisorChain;
+import org.springframework.ai.chat.client.advisor.api.BaseAdvisor;
 
 import java.util.Map;
 
 @Slf4j
-public class CustomMediaAdvisor implements BaseAdvisor {
+public class MediaResolveAdvisor implements BaseAdvisor {
     public static final String PATTERN_KEY = "patternKey";
     public static final String CLIENT_ID_KEY = "clientIdKey";
     private static final String DEFAULT_FILE_PATTERN = "@file:([^\\s]+)";
@@ -17,12 +18,12 @@ public class CustomMediaAdvisor implements BaseAdvisor {
     private String filePattern;
     private final AttachmentProcessor attachmentProcessor;
 
-    public CustomMediaAdvisor(AttachmentProcessor attachmentProcessor, String filePattern) {
+    public MediaResolveAdvisor(AttachmentProcessor attachmentProcessor, String filePattern) {
         this.filePattern = filePattern;
         this.attachmentProcessor = attachmentProcessor;
     }
 
-    public CustomMediaAdvisor(AttachmentProcessor attachmentProcessor) {
+    public MediaResolveAdvisor(AttachmentProcessor attachmentProcessor) {
         this(attachmentProcessor, DEFAULT_FILE_PATTERN);
     }
 

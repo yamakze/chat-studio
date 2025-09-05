@@ -1,8 +1,11 @@
 package com.wokoba.czh.domain.agent.adapter.repository;
 
 import com.wokoba.czh.domain.agent.model.entity.*;
+import com.wokoba.czh.domain.agent.model.valobj.AiAgentClientFlowConfigVO;
+import com.wokoba.czh.domain.agent.model.valobj.AiClientVO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IChatRepository {
     List<AiClientModelEntity> queryAiClientModelVOListByClientIds(List<Long> clientIdList);
@@ -11,7 +14,7 @@ public interface IChatRepository {
 
     List<AiClientAdvisorEntity> queryAdvisorConfigByClientIds(List<Long> clientIdList);
 
-    List<AiClientMateriel> queryAiClientByClientIds(List<Long> clientIdList);
+    List<AiClientMateriel> queryClientMaterielByClientIds(List<Long> clientIdList);
 
     List<Long> queryAiClientIds();
 
@@ -19,7 +22,7 @@ public interface IChatRepository {
 
     void storeRagOrder(String name, String tag);
 
-    void updateClientConfig(Long clientId, Long systemPromptId, Long modelId, List<Long> mcpIdList, List<Long> advisorIdList, String optionsJsonStr);
+    void updateClientConfig(AiClientMateriel materiel);
 
     int deleteRagOrder(Long ragId);
 
@@ -34,4 +37,8 @@ public interface IChatRepository {
     void deleteClientById(Long clientId);
 
     void insertTaskExecutionRecord(Long taskId, String request, String response, Integer totalTokens, String status);
+
+    Map<String, AiAgentClientFlowConfigVO> queryAiAgentClientFlowConfig(String aiAgentId);
+
+    AiClientVO queryClientBasicInfoById(Long clientId);
 }

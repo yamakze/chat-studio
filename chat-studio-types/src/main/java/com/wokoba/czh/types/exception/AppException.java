@@ -1,5 +1,6 @@
 package com.wokoba.czh.types.exception;
 
+import com.wokoba.czh.types.enums.ResponseCode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,11 +10,20 @@ public class AppException extends RuntimeException {
 
     private static final long serialVersionUID = 5317680961212299217L;
 
-    /** 异常码 */
+    /**
+     * 异常码
+     */
     private String code;
 
-    /** 异常信息 */
+    /**
+     * 异常信息
+     */
     private String info;
+
+    public AppException(ResponseCode code) {
+        this.code = code.getCode();
+        this.info = code.getInfo();
+    }
 
     public AppException(String code) {
         this.code = code;
@@ -38,9 +48,9 @@ public class AppException extends RuntimeException {
     @Override
     public String toString() {
         return "com.wokoba.czh.x.api.types.exception.XApiException{" +
-                "code='" + code + '\'' +
-                ", info='" + info + '\'' +
-                '}';
+               "code='" + code + '\'' +
+               ", info='" + info + '\'' +
+               '}';
     }
 
 }

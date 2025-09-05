@@ -6,7 +6,6 @@ import com.wokoba.czh.domain.agent.model.valobj.PromptTemplates;
 import com.wokoba.czh.domain.agent.service.agent.AbstractAgentService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.core.ParameterizedTypeReference;

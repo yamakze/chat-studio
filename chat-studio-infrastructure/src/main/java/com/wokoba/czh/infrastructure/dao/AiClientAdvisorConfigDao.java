@@ -2,12 +2,10 @@ package com.wokoba.czh.infrastructure.dao;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.infrastructure.dao.po.AiClientAdvisorConfig;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 客户端-顾问关联表DAO

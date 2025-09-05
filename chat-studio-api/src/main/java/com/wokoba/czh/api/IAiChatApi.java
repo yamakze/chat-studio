@@ -3,8 +3,6 @@ package com.wokoba.czh.api;
 import com.wokoba.czh.api.dto.AiChatContextRequestDTO;
 import com.wokoba.czh.api.dto.AiChatRequestDTO;
 import com.wokoba.czh.api.dto.ChatResponseDTO;
-import jakarta.validation.constraints.NotNull;
-import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import reactor.core.publisher.Flux;

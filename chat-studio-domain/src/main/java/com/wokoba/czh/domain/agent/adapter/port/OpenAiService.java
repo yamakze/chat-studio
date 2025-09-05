@@ -4,5 +4,5 @@ import java.util.List;
 
 public interface OpenAiService {
 
-    List<String> modelList(String baseUrl, String completionsPath, String apiKey);
+    List<String> modelList(String completionsUrl, String apiKey);
 }

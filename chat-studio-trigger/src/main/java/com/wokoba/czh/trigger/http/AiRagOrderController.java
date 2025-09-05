@@ -5,7 +5,6 @@ import com.wokoba.czh.domain.agent.model.valobj.GitRepoEntity;
 import com.wokoba.czh.domain.agent.service.IAiRagService;
 import com.wokoba.czh.infrastructure.dao.AiRagOrderDao;
 import com.wokoba.czh.infrastructure.dao.po.AiRagOrder;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

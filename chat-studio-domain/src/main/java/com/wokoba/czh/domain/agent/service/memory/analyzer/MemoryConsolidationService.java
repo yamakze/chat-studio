@@ -2,7 +2,7 @@ package com.wokoba.czh.domain.agent.service.memory.analyzer;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.wokoba.czh.domain.agent.model.valobj.MemoryMetadataVO;
-import com.wokoba.czh.domain.agent.service.memory.RetrievableChatMemory;
+import com.wokoba.czh.domain.agent.service.memory.RetrievableChatChatMemory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.prompt.ChatOptions;
@@ -25,9 +25,9 @@ public class MemoryConsolidationService {
 
     private final ChatClient llmAider;
     private final VectorStore vectorStore;
-    private final RetrievableChatMemory chatMemory;
+    private final RetrievableChatChatMemory chatMemory;
 
-    public MemoryConsolidationService(ChatClient.Builder clientBuilder, VectorStore vectorStore, RetrievableChatMemory chatMemory) {
+    public MemoryConsolidationService(ChatClient.Builder clientBuilder, VectorStore vectorStore, RetrievableChatChatMemory chatMemory) {
         this.llmAider = clientBuilder
                 .defaultOptions(ChatOptions.builder()
                         .temperature(0.8)

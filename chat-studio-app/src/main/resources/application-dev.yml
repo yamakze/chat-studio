@@ -11,7 +11,7 @@ thread:
         block-queue-size: 5000
         policy: CallerRunsPolicy
 
-# 数据库配置；启动时配置数据库资源信息
+# 嵌入模型配置
 spring:
   ai:
     openai:
@@ -28,6 +28,8 @@ spring:
 #        repository:
 #          jdbc:
 #            schema: classpath:/sql/memory.sql
+
+# 数据库配置；启动时配置数据库资源信息
   datasource:
     hikari:
       #连接池名
@@ -64,7 +66,7 @@ spring:
       max-file-size: 10MB
       max-request-size: 20MB
 
-
+# 长期记忆配置
 memory:
   enabled: true
   consolidate:
@@ -85,7 +87,8 @@ mybatis-plus:
       id-type: AUTO
 
 # 日志
-logging:
-  level:
-    root: debug
-  config: classpath:logback-spring.xml
+#logging:
+#  level:
+#    root: debug
+#  config: classpath:logback-spring.xml
+

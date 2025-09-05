@@ -1,9 +1,8 @@
 package com.wokoba.czh.domain.agent.service.armory.node;
 
 import com.alibaba.fastjson.JSON;
-import com.wokoba.czh.domain.agent.model.entity.ChatEngineStarterEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiClientModelEntity;
-import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
+import com.wokoba.czh.domain.agent.model.entity.ChatEngineStarterEntity;
 import com.wokoba.czh.domain.agent.service.armory.AbstractArmorySupport;
 import com.wokoba.czh.domain.agent.service.armory.factory.DefaultArmoryStrategyFactory;
 import com.wokoba.czh.types.common.Constants;
@@ -77,9 +76,6 @@ public class AiClientModelNode extends AbstractArmorySupport {
         // 构建OpenAiChatModel
         return OpenAiChatModel.builder()
                 .openAiApi(openAiApi)
-                .defaultOptions(OpenAiChatOptions.builder()
-                        .model(model.getModelVersion())
-                        .build())
                 .build();
     }
 

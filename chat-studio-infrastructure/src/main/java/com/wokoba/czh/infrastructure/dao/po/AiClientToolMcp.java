@@ -1,6 +1,5 @@
 package com.wokoba.czh.infrastructure.dao.po;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 import java.time.LocalDateTime;

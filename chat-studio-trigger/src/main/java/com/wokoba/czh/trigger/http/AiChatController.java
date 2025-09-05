@@ -6,19 +6,19 @@ import com.wokoba.czh.api.dto.AiChatRequestDTO;
 import com.wokoba.czh.api.dto.ChatResponseDTO;
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.service.AttachmentProcessor;
-import com.wokoba.czh.domain.agent.service.IAiAgentService;
 import com.wokoba.czh.domain.agent.service.chat.AiChatService;
+import com.wokoba.czh.domain.agent.service.memory.DeleteableChatMemory;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.metadata.Usage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -37,21 +37,21 @@ public class AiChatController implements IAiChatApi {
     @Autowired
     private AttachmentProcessor attachmentProcessor;
     @Autowired
-    private ChatMemory chatMemory;
-    @Autowired
-    private IAiAgentService agentService;
+    private DeleteableChatMemory chatMemory;
+
 
     /**
      * 单轮对话
      */
     @Override
-    @GetMapping
-    public ResponseEntity<ChatResponseDTO> aiChat(@Valid AiChatRequestDTO requestDTO) {
+    @PostMapping
+    public ResponseEntity<ChatResponseDTO> aiChat(@Valid @RequestBody AiChatRequestDTO requestDTO) {
         ChatResponse chatResponse = aiChatService.aiChat(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryActionCode(requestDTO.getRetryActionCode())
+                .setEditActionCode(requestDTO.getEditActionCode())
                 .setClientId(requestDTO.getChatClientId()));
+
         Integer completionTokens = chatResponse.getMetadata().getUsage().getCompletionTokens();
         Integer promptTokens = chatResponse.getMetadata().getUsage().getPromptTokens();
         Integer totalTokens = chatResponse.getMetadata().getUsage().getTotalTokens();
@@ -63,12 +63,12 @@ public class AiChatController implements IAiChatApi {
      * 流式对话
      */
     @Override
-    @GetMapping("/stream")
-    public ResponseEntity<Flux<ChatResponseDTO>> aiChatStream(@Valid AiChatRequestDTO requestDTO) {
+    @PostMapping(value = "/stream", produces = MediaType.APPLICATION_NDJSON_VALUE)
+    public ResponseEntity<Flux<ChatResponseDTO>> aiChatStream(@Valid @RequestBody AiChatRequestDTO requestDTO) {
         Flux<ChatResponse> responseFlux = aiChatService.aiChatStream(new AiChatRequestEntity()
                 .setUserMessage(requestDTO.getMessage())
                 .setRagId(requestDTO.getRagId())
-                .setRetryActionCode(requestDTO.getRetryActionCode())
+                .setEditActionCode(requestDTO.getEditActionCode())
                 .setClientId(requestDTO.getChatClientId()));
 
         return ResponseEntity.ok(responseFlux.map(response -> {
@@ -133,10 +133,6 @@ public class AiChatController implements IAiChatApi {
     private Message convertToMessage(AiChatContextRequestDTO context, Long clientId) {
         return switch (context.getMessageType().toLowerCase()) {
             case "user" -> {
-//                UserMessage.builder()
-//                        .text(context.getMessage())
-//                        .metadata(Map.of("timestamp", context.getTimestamp()))
-//                        .build();
                 UserMessage userMessage = attachmentProcessor.handleChatAttachments(
                         context.getMessage(),
                         Optional.ofNullable(context.getFilePatten()).orElse("@file:([^\\s]+)"),

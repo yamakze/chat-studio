@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.api.dto.AiToolRequestDTO;
-import com.wokoba.czh.api.group.Groups;
+import com.wokoba.czh.api.group.ValidatorGroups;
 import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
 import com.wokoba.czh.domain.agent.service.armory.AiAgentPreheatService;
 import com.wokoba.czh.infrastructure.dao.AiClientToolConfigDao;
@@ -12,7 +12,6 @@ import com.wokoba.czh.infrastructure.dao.AiClientToolMcpDao;
 import com.wokoba.czh.infrastructure.dao.po.AiClientToolConfig;
 import com.wokoba.czh.infrastructure.dao.po.AiClientToolMcp;
 import com.wokoba.czh.types.common.Constants;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -78,7 +77,7 @@ public class AiMcpToolsController {
      * 创建工具
      */
     @PostMapping
-    public ResponseEntity<String> createTool(@RequestBody @Validated(Groups.Create.class) AiToolRequestDTO requestDTO) {
+    public ResponseEntity<String> createTool(@RequestBody @Validated(ValidatorGroups.Create.class) AiToolRequestDTO requestDTO) {
         try {
             log.info("创建mcp工具开始 toolMcp:{}", requestDTO);
             objectMapper.readTree(requestDTO.getTransportConfig());
@@ -95,7 +94,7 @@ public class AiMcpToolsController {
      * 更新工具
      */
     @PutMapping
-    public ResponseEntity<String> updateTool(@RequestBody @Validated(Groups.Update.class) AiToolRequestDTO requestDTO) {
+    public ResponseEntity<String> updateTool(@RequestBody @Validated(ValidatorGroups.Update.class) AiToolRequestDTO requestDTO) {
         try {
             log.info("更新mcp工具开始 toolMcp:{}", requestDTO);
             objectMapper.readTree(requestDTO.getTransportConfig());

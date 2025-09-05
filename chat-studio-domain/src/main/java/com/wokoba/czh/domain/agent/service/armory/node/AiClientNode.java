@@ -14,6 +14,7 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.api.Advisor;
 import org.springframework.ai.mcp.SyncMcpToolCallbackProvider;
 import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -46,11 +47,13 @@ public class AiClientNode extends AbstractArmorySupport {
             for (String advisorBeanName : advisorBeanNameList) {
                 advisors.add(customBeanRegistrar.getBean(advisorBeanName));
             }
-//            advisors.addAll(List.of(new HistoryRecordAdvisor()));
             // 4. 构建对话客户端
+            OpenAiChatOptions chatOptions = clientMateriel.getOptions().buildOpenAiOptions();
+            chatOptions.setModel(clientMateriel.getModelVersion());
+
             ChatClient client = ChatClient.builder(chatModel)
                     .defaultSystem(clientMateriel.getSystemPromptContent())
-                    .defaultOptions(clientMateriel.getOptions().buildOpenAiOptions())
+                    .defaultOptions(chatOptions)
                     .defaultToolCallbacks(new SyncMcpToolCallbackProvider(mcpSyncClients.toArray(new McpSyncClient[]{})))
                     .defaultAdvisors(advisors.toArray(new Advisor[]{}))
                     .build();

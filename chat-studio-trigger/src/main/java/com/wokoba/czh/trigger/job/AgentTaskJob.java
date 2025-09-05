@@ -2,7 +2,6 @@ package com.wokoba.czh.trigger.job;
 
 import com.wokoba.czh.domain.agent.model.entity.AiChatRequestEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiTaskScheduleEntity;
-import com.wokoba.czh.domain.agent.model.valobj.ChatRetryAction;
 import com.wokoba.czh.domain.agent.service.IAiChatService;
 import com.wokoba.czh.domain.agent.service.task.AiAgentTaskService;
 import jakarta.annotation.PostConstruct;
@@ -59,7 +58,7 @@ public class AgentTaskJob implements DisposableBean {
     /**
      * 检查并更新任务调度配置
      */
-    @Scheduled(fixedRate = 60000)
+//    @Scheduled(fixedRate = 60000)
     public void refreshTasks() {
         try {
             // 获取所有有效的任务调度配置

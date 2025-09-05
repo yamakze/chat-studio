@@ -24,6 +24,8 @@ public class AiClientMateriel {
 
     private Long modelId;
 
+    private String modelVersion;
+
     private List<Long> mcpIdList;
 
     private List<Long> advisorIdList;

@@ -3,6 +3,7 @@ package com.wokoba.czh.types.common;
 public class Constants {
 
     public final static String SPLIT = ",";
+    public final static String CONNECT = "-";
 
     public final static String MEDIA_DIR = System.getProperty("user.home") + "/Downloads/chat-studio/media";
 
