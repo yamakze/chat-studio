@@ -95,7 +95,12 @@ bash start.sh
 
 > 🔧 默认运行端口：`http://localhost:8091`
 
-📌 默认配置文件路径：`src/main/resources/application.yml`，请根据实际情况配置数据库连接、模型参数等信息。
+📌 请根据实际情况调整中间件、数据库连接、模型key等信息。
+
+配置文件路径：
+- `src/main/resources/application-dev.yml`
+- `docs/dev-ops/docker-compose-environment.yml`
+
 
 ### 💻 启动前端服务
 
