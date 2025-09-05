@@ -2,7 +2,7 @@ package com.wokoba.czh.trigger.http;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.api.dto.AiPromptRequestDTO;
-import com.wokoba.czh.api.group.Groups;
+import com.wokoba.czh.api.group.ValidatorGroups;
 import com.wokoba.czh.domain.agent.service.armory.AiAgentPreheatService;
 import com.wokoba.czh.infrastructure.dao.AiClientDao;
 import com.wokoba.czh.infrastructure.dao.AiClientSystemPromptDao;
@@ -65,7 +65,7 @@ public class AiSystemPromptController {
      * 新增系统提示词
      */
     @PostMapping
-    public ResponseEntity<String> saveSystemPrompt(@RequestBody @Validated(Groups.Create.class) AiPromptRequestDTO requestDTO) {
+    public ResponseEntity<String> saveSystemPrompt(@RequestBody @Validated(ValidatorGroups.Create.class) AiPromptRequestDTO requestDTO) {
         log.info("新增系统提示词 promptName: {}, description: {}", requestDTO.getPromptName(), requestDTO.getDescription());
         AiClientSystemPrompt systemPrompt = convertToSystemPrompt(requestDTO);
         aiClientSystemPromptDao.insert(systemPrompt);
@@ -93,7 +93,7 @@ public class AiSystemPromptController {
      * 更新系统提示词
      */
     @PutMapping
-    public ResponseEntity<String> updateSystemPrompt(@Validated(Groups.Update.class) @RequestBody AiPromptRequestDTO requestDTO) {
+    public ResponseEntity<String> updateSystemPrompt(@Validated(ValidatorGroups.Update.class) @RequestBody AiPromptRequestDTO requestDTO) {
         try {
             log.info("更新系统提示词开始 id: {}", requestDTO.getId());
             AiClientSystemPrompt prompt=convertToSystemPrompt(requestDTO);

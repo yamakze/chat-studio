@@ -2,7 +2,6 @@ package com.wokoba.czh.infrastructure.adapter.port;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
 import com.wokoba.czh.domain.agent.adapter.port.OpenAiService;
 import com.wokoba.czh.infrastructure.gateway.dto.ModelListResponseDTO;
 import lombok.extern.slf4j.Slf4j;
@@ -22,13 +21,13 @@ public class OpenAiPort implements OpenAiService {
     private final Set<String> flatModelIndex = ConcurrentHashMap.newKeySet();
 
     private final Cache<String, List<String>> modelListCache = CacheBuilder.newBuilder()
-            .expireAfterAccess(5, TimeUnit.MINUTES)
-            .removalListener((RemovalListener<String, List<String>>) notification -> {
-                List<String> removedList = notification.getValue();
-                if (removedList != null) {
-                    removedList.forEach(flatModelIndex::remove);
-                }
-            })
+            .expireAfterAccess(1, TimeUnit.HOURS)
+//            .removalListener((RemovalListener<String, List<String>>) notification -> {
+//                List<String> removedList = notification.getValue();
+//                if (removedList != null) {
+//                    removedList.forEach(flatModelIndex::remove);
+//                }
+//            })
             .build();
 
     /**
@@ -58,6 +57,7 @@ public class OpenAiPort implements OpenAiService {
 
             // 放入缓存
             modelListCache.put(url, modelList);
+            modelList.forEach(flatModelIndex::remove);
             flatModelIndex.addAll(modelList);
 
             return modelList;

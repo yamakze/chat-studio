@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wokoba.czh.api.dto.AiClientConfigRequestDTO;
 import com.wokoba.czh.api.dto.AiClientResponseDTO;
+import com.wokoba.czh.api.group.ValidatorGroups;
 import com.wokoba.czh.domain.agent.model.entity.AiClientEntity;
 import com.wokoba.czh.domain.agent.model.entity.AiClientMateriel;
 import com.wokoba.czh.domain.agent.model.valobj.AiClientOptionsVO;
@@ -59,7 +60,8 @@ public class AiClientController {
      * 更新客户端配置
      */
     @PutMapping("/config")
-    public ResponseEntity<String> updateAiClientConfig(@RequestBody @Validated AiClientConfigRequestDTO requestDTO) {
+    public ResponseEntity<String> updateAiClientConfig(@RequestBody @Validated(ValidatorGroups.ValidationOrder.class)
+                                                           AiClientConfigRequestDTO requestDTO) {
         Long clientId = requestDTO.getClientId();
         try {
             log.info("开始更新AI客户端配置，clientId:{}", clientId);
@@ -139,11 +141,11 @@ public class AiClientController {
         return ResponseEntity.ok("删除client成功");
     }
 
-    private static AiClientResponseDTO convertToClientResponse(AiClientEntity clientEntity) {
+    private AiClientResponseDTO convertToClientResponse(AiClientEntity clientEntity) {
         AiClientResponseDTO aiClientResponseDTO = new AiClientResponseDTO();
         aiClientResponseDTO.setId(clientEntity.getClientId());
-        aiClientResponseDTO.setModelId(clientEntity.getModelId());
         aiClientResponseDTO.setOptionsJsonStr(clientEntity.getOptions());
+        aiClientResponseDTO.setModelVersionId(clientEntity.getModelId(), clientEntity.getModelVersion());
         aiClientResponseDTO.setSystemPromptId(clientEntity.getSystemPromptId());
         aiClientResponseDTO.setClientName(clientEntity.getClientName());
         aiClientResponseDTO.setDescription(clientEntity.getDescription());

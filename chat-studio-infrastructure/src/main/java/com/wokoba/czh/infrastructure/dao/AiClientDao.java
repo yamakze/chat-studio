@@ -11,13 +11,18 @@ import java.util.List;
 
 @Mapper
 public interface AiClientDao extends BaseMapper<AiClient> {
-    @Select("<script> " +
-            "SELECT model_id FROM ai_client " +
-            "WHERE id IN " +
-            "<foreach item='item' collection='clientIdList' open='(' separator=',' close=')'>" +
-            "#{item}" +
-            "</foreach>" +
-            "</script>")
+
+    @Select("""
+            <script> 
+            SELECT DISTINCT acmc.model_id
+            FROM ai_client ac
+            JOIN ai_client_model_config acmc ON ac.model_config_id = acmc.id
+            WHERE ac.id IN
+            <foreach collection="clientIdList" item="clientId" open="(" separator="," close=")">
+                #{clientId}
+            </foreach>
+            </script>
+            """)
     List<Long> queryModelIdsByClientIds(@Param("clientIdList") List<Long> clientIdList);
 
     @Select("<script> " +

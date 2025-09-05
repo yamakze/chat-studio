@@ -3,45 +3,48 @@ package com.wokoba.czh.trigger.http;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.api.dto.AiModelRequestDTO;
 import com.wokoba.czh.api.dto.AiModelResponseDTO;
-import com.wokoba.czh.api.group.Groups;
+import com.wokoba.czh.api.group.ValidatorGroups;
 import com.wokoba.czh.domain.agent.adapter.port.OpenAiService;
 import com.wokoba.czh.domain.agent.service.CustomBeanRegistrar;
 import com.wokoba.czh.domain.agent.service.IAiAgentPreheatService;
 import com.wokoba.czh.infrastructure.dao.AiChatModelDao;
 import com.wokoba.czh.infrastructure.dao.AiClientDao;
 import com.wokoba.czh.infrastructure.dao.AiClientModelConfigDao;
-import com.wokoba.czh.infrastructure.dao.po.AiClient;
 import com.wokoba.czh.infrastructure.dao.po.AiClientModel;
 import com.wokoba.czh.infrastructure.dao.po.AiClientModelConfig;
 import com.wokoba.czh.types.common.Constants;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/model")
 @Slf4j
 public class AiChatModelController {
-    @Autowired
-    private AiChatModelDao aiChatModelDao;
-    @Autowired
-    private IAiAgentPreheatService aiAgentPreheatService;
-    @Autowired
-    private AiClientDao aiClientDao;
-    @Autowired
-    private CustomBeanRegistrar customBeanRegistrar;
-    @Autowired
-    private OpenAiService openAiService;
-    @Autowired
-    private AiClientModelConfigDao aiClientModelConfigDao;
+
+    private final AiChatModelDao aiChatModelDao;
+    private final IAiAgentPreheatService aiAgentPreheatService;
+    private final AiClientDao aiClientDao;
+    private final CustomBeanRegistrar customBeanRegistrar;
+    private final OpenAiService openAiService;
+    private final AiClientModelConfigDao aiClientModelConfigDao;
+    private final TransactionTemplate transactionTemplate;
+
+    public AiChatModelController(AiChatModelDao aiChatModelDao, IAiAgentPreheatService aiAgentPreheatService, AiClientDao aiClientDao, CustomBeanRegistrar customBeanRegistrar, OpenAiService openAiService, AiClientModelConfigDao aiClientModelConfigDao, TransactionTemplate transactionTemplate, TransactionTemplate transactionTemplate1) {
+        this.aiChatModelDao = aiChatModelDao;
+        this.aiAgentPreheatService = aiAgentPreheatService;
+        this.aiClientDao = aiClientDao;
+        this.customBeanRegistrar = customBeanRegistrar;
+        this.openAiService = openAiService;
+        this.aiClientModelConfigDao = aiClientModelConfigDao;
+        this.transactionTemplate = transactionTemplate1;
+    }
 
 
     /**
@@ -63,7 +66,7 @@ public class AiChatModelController {
                                 .eq(AiClientModel::getStatus, 1)
                                 .orderByDesc(AiClientModel::getCreateTime))
                 .stream()
-                .map(this::convertToResponseDTO)
+                .flatMap(aiClientModel -> convertToResponseDTO(aiClientModel).stream())
                 .toList());
     }
 
@@ -91,7 +94,7 @@ public class AiChatModelController {
      * 新增模型
      */
     @PostMapping
-    public ResponseEntity<String> createModel(@RequestBody @Validated(Groups.Create.class) AiModelRequestDTO requestDTO) {
+    public ResponseEntity<String> createModel(@RequestBody @Validated(ValidatorGroups.Create.class) AiModelRequestDTO requestDTO) {
         log.info("新增chatModel request:{}", requestDTO);
         AiClientModel aiClientModel = convertToModel(requestDTO);
         aiChatModelDao.insert(aiClientModel);
@@ -103,7 +106,7 @@ public class AiChatModelController {
      * 更新模型
      */
     @PutMapping
-    public ResponseEntity<String> updateModel(@RequestBody @Validated(Groups.Update.class) AiModelRequestDTO requestDTO) {
+    public ResponseEntity<String> updateModel(@RequestBody @Validated(ValidatorGroups.Update.class) AiModelRequestDTO requestDTO) {
         Long modelId = requestDTO.getId();
         try {
             log.info("开始更新model id:{}", modelId);
@@ -140,27 +143,39 @@ public class AiChatModelController {
     @DeleteMapping
     public ResponseEntity<Boolean> deleteModel(@RequestParam @NotNull Long modelId) {
         log.info("删除模型开始 modelId:{}", modelId);
-        aiClientModelConfigDao.delete(Wrappers.lambdaQuery(AiClientModelConfig.class).eq(AiClientModelConfig::getModelId, modelId));
-        int delete = aiChatModelDao.delete(Wrappers.<AiClientModel>lambdaQuery()
-                .eq(AiClientModel::getId, modelId)
-                .eq(AiClientModel::getStatus, 0));
-        if (delete > 0) {
+        Integer delete = transactionTemplate.execute(status -> {
+            try {
+                aiClientModelConfigDao.delete(Wrappers.lambdaQuery(AiClientModelConfig.class).eq(AiClientModelConfig::getModelId, modelId));
+                return aiChatModelDao.delete(Wrappers.<AiClientModel>lambdaQuery()
+                        .eq(AiClientModel::getId, modelId)
+                        .eq(AiClientModel::getStatus, 0));
+            } catch (Exception e) {
+                status.setRollbackOnly();
+                log.error("删除模型失败时异常 modelId:{}", modelId, e);
+                throw new RuntimeException(e);
+            }
+        });
+
+        if (Objects.nonNull(delete) && delete > 0) {
             customBeanRegistrar.clearBean(Constants.BeanName.MODEL + modelId);
             return ResponseEntity.ok(true);
         }
         return ResponseEntity.ok(false);
     }
 
-    private AiModelResponseDTO convertToResponseDTO(AiClientModel clientModel) {
+    private List<AiModelResponseDTO> convertToResponseDTO(AiClientModel clientModel) {
         if (clientModel == null) {
             return null;
         }
-        List<String> modelVersionList = openAiService.modelList(clientModel.getBaseUrl() + clientModel.getCompletionsPath(), clientModel.getApiKey());
-        AiModelResponseDTO aiModelResponseDTO = new AiModelResponseDTO();
-        aiModelResponseDTO.setId(clientModel.getId());
-        aiModelResponseDTO.setModelName(clientModel.getModelName());
-        aiModelResponseDTO.setModelVersionList(modelVersionList);
-        return aiModelResponseDTO;
+        List<String> modelVersionList = openAiService.modelList(clientModel.getCompletionsUrl(), clientModel.getApiKey());
+
+        return modelVersionList.stream()
+                .map(modelVersion -> {
+                    AiModelResponseDTO aiModelResponseDTO = new AiModelResponseDTO();
+                    aiModelResponseDTO.setModelName(clientModel.getModelName());
+                    aiModelResponseDTO.setModelVersionId(clientModel.getId(), modelVersion);
+                    return aiModelResponseDTO;
+                }).toList();
     }
 
     private AiClientModel convertToModel(AiModelRequestDTO requestDTO) {

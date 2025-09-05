@@ -2,7 +2,6 @@ package com.wokoba.czh.infrastructure.dao;
 
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.infrastructure.dao.po.AiClientModelConfig;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;

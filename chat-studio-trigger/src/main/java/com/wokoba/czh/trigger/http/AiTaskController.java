@@ -3,7 +3,7 @@ package com.wokoba.czh.trigger.http;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.wokoba.czh.api.dto.AiTaskExecutionRecordResponseDTO;
 import com.wokoba.czh.api.dto.AiTaskScheduleRequestDTO;
-import com.wokoba.czh.api.group.Groups;
+import com.wokoba.czh.api.group.ValidatorGroups;
 import com.wokoba.czh.infrastructure.dao.AiAgentTaskScheduleDao;
 import com.wokoba.czh.infrastructure.dao.AiTaskExecutionRecordDao;
 import com.wokoba.czh.infrastructure.dao.po.AiAgentTaskSchedule;
@@ -30,7 +30,7 @@ public class AiTaskController {
      * 创建任务
      */
     @PostMapping
-    public ResponseEntity<String> createTask(@RequestBody @Validated(Groups.Create.class) AiTaskScheduleRequestDTO requestDTO) {
+    public ResponseEntity<String> createTask(@RequestBody @Validated(ValidatorGroups.Create.class) AiTaskScheduleRequestDTO requestDTO) {
         try {
             AiAgentTaskSchedule taskSchedule = convertToTaskSchedule(requestDTO);
             aiAgentTaskScheduleDao.insert(taskSchedule);
@@ -45,7 +45,7 @@ public class AiTaskController {
      * 更新任务
      */
     @PutMapping
-    public ResponseEntity<String> updateTask(@RequestBody @Validated(Groups.Update.class) AiTaskScheduleRequestDTO requestDTO) {
+    public ResponseEntity<String> updateTask(@RequestBody @Validated(ValidatorGroups.Update.class) AiTaskScheduleRequestDTO requestDTO) {
         try {
             AiAgentTaskSchedule taskSchedule = convertToTaskSchedule(requestDTO);
             aiAgentTaskScheduleDao.updateById(taskSchedule);

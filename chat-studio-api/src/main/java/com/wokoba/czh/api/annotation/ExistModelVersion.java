@@ -1,13 +1,18 @@
 package com.wokoba.czh.api.annotation;
 
-import com.wokoba.czh.api.validator.ModelVersionValidator;
 import jakarta.validation.Constraint;
+import jakarta.validation.Payload;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
+@Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Constraint(validatedBy = ModelVersionValidator.class)
+@Constraint(validatedBy = {})
 public @interface ExistModelVersion {
+    String message() default "模型版本不存在";
+
+    Class<?>[] groups() default {};
+
+    Class<? extends Payload>[] payload() default {};
 }

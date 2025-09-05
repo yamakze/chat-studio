@@ -45,8 +45,9 @@ public class AiClientService {
 
     @SneakyThrows
     public void initAiClient() {
-        AiClientMateriel aiClientMateriel = repository.queryClientBasicMaterials();
         Long clientId = repository.initAiClient();
+        AiClientMateriel aiClientMateriel = repository.queryClientBasicMaterials();
+        aiClientMateriel.setClientId(clientId);
         repository.updateClientConfig(aiClientMateriel);
         aiAgentPreheatService.preheat(clientId);
     }
@@ -61,8 +62,7 @@ public class AiClientService {
     @SneakyThrows
     public AiClientEntity getClientEntityById(Long clientId) {
         List<AiClientMateriel> aiClientMateriels = repository.queryClientMaterielByClientIds(List.of(clientId));
-        if (aiClientMateriels.isEmpty()) throw new AppException(ResponseCode.MISS_CLIENT_MATERIALS);
-        
+
         AiClientMateriel aiClientMateriel = aiClientMateriels.get(0);
         AiClientVO clientVO = repository.queryClientBasicInfoById(clientId);
 

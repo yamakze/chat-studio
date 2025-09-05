@@ -125,7 +125,14 @@ public class ChatRepository implements IChatRepository {
         List<AiClientMateriel> result = new ArrayList<>();
         for (AiClient client : clientList) {
             Long clientId = client.getId();
-            AiClientModelConfig aiClientModelConfig = modelConfigMap.getOrDefault(client.getModelConfigId(), modelConfigMap.values().stream().findFirst().orElseThrow());
+            //设置客户端模型配置
+            AiClientModelConfig aiClientModelConfig = modelConfigMap.getOrDefault(
+                    client.getModelConfigId(),
+                    modelConfigMap.values()
+                            .stream()
+                            .findFirst()
+                            .orElseThrow(() -> new AppException(ResponseCode.MISS_CLIENT_MATERIALS))
+            );
 
             //设置客户端基础配置
             AiClientMateriel clientVO = AiClientMateriel.builder()
@@ -188,12 +195,12 @@ public class ChatRepository implements IChatRepository {
         List<Long> mcpIdList = materiel.getMcpIdList();
         transactionTemplate.executeWithoutResult(status -> {
             try {
-                if (advisorIdList != null) {
+                if (Objects.nonNull(advisorIdList)) {
                     aiClientAdvisorConfigDao.deleteBatchByClientId(clientId);
                     if (!advisorIdList.isEmpty())
                         aiClientAdvisorConfigDao.insertBatch(clientId, advisorIdList);
                 }
-                if (mcpIdList != null) {
+                if (Objects.nonNull(mcpIdList)) {
                     aiClientToolConfigDao.deleteBatchByClientId(clientId);
                     if (!mcpIdList.isEmpty())
                         aiClientToolConfigDao.insertBatch(clientId, mcpIdList);
@@ -211,6 +218,7 @@ public class ChatRepository implements IChatRepository {
             } catch (Exception e) {
                 log.error("更新客户端配置失败，clientId={}", clientId, e);
                 status.setRollbackOnly();
+                throw new AppException(ResponseCode.UN_ERROR);
             }
         });
     }
@@ -225,19 +233,19 @@ public class ChatRepository implements IChatRepository {
         List<Long> advisorIdList = aiClientAdvisorDao.queryBasicAdvisorIds();
         List<Long> mcpIdList = aiClientToolMcpDao.queryBasicToolIds();
         Long defaultPromptId = aiClientSystemPromptDao.selectOne(Wrappers
-                .lambdaQuery(AiClientSystemPrompt.class)
-                .select(AiClientSystemPrompt::getId)
-                .orderByAsc(AiClientSystemPrompt::getCreateTime)
-                .last("limit 1")).getId();
+                        .lambdaQuery(AiClientSystemPrompt.class)
+                        .select(AiClientSystemPrompt::getId)
+                        .orderByDesc(AiClientSystemPrompt::getUpdateTime)
+                        .last("limit 1"))
+                .getId();
 
         AiClientModel aiClientModel = aiChatModelDao.selectOne(Wrappers
                 .lambdaQuery(AiClientModel.class)
-                .select(AiClientModel::getId)
-                .orderByAsc(AiClientModel::getCreateTime)
+                .orderByDesc(AiClientModel::getUpdateTime)
                 .last("limit 1"));
 
         if (Objects.isNull(aiClientModel)) throw new AppException(ResponseCode.AI_MODEL_MISSING);
-        List<String> modelVersionList = openAiPort.modelList(aiClientModel.getBaseUrl(), aiClientModel.getApiKey());
+        List<String> modelVersionList = openAiPort.modelList(aiClientModel.getCompletionsUrl(), aiClientModel.getApiKey());
         if (modelVersionList.isEmpty()) throw new AppException(ResponseCode.MODEL_SUPPLIER_EXCEPTION);
 
         return AiClientMateriel.builder()
