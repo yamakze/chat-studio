@@ -206,7 +206,7 @@ public class ChatRepository implements IChatRepository {
                         aiClientToolConfigDao.insertBatch(clientId, mcpIdList);
                 }
 
-                int modelConfigId = upsertModelConfig(materiel);
+                Long modelConfigId = upsertModelConfig(materiel);
 
                 aiClientDao.update(Wrappers.lambdaUpdate(AiClient.class)
                         .eq(AiClient::getId, clientId)
@@ -383,14 +383,15 @@ public class ChatRepository implements IChatRepository {
         return vo;
     }
 
-    private int upsertModelConfig(AiClientMateriel materiel) throws JsonProcessingException {
-        return aiClientModelConfigDao.upsertByClientIdAndModelIdAndVersion(
-                AiClientModelConfig.builder()
-                        .clientId(materiel.getClientId())
-                        .modelId(materiel.getModelId())
-                        .modelVersion(materiel.getModelVersion())
-                        .options(objectMapper.writeValueAsString(materiel.getOptions()))
-                        .build()
-        );
+    private Long upsertModelConfig(AiClientMateriel materiel) throws JsonProcessingException {
+        AiClientModelConfig config = AiClientModelConfig.builder()
+                .clientId(materiel.getClientId())
+                .modelId(materiel.getModelId())
+                .modelVersion(materiel.getModelVersion())
+                .options(objectMapper.writeValueAsString(materiel.getOptions()))
+                .build();
+
+        aiClientModelConfigDao.upsertByClientIdAndModelIdAndVersion(config);
+        return config.getId();
     }
 }
