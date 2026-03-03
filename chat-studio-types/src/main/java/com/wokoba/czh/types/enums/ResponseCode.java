@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor
-@NoArgsConstructor
 @Getter
 public enum ResponseCode {
 
@@ -17,7 +16,7 @@ public enum ResponseCode {
     AI_MODEL_MISSING("0005", "模型数据缺失"),
     ;
 
-    private String code;
-    private String info;
+    private final String code;
+    private final String info;
 
 }

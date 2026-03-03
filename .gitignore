@@ -31,6 +31,8 @@ chat-studio-app/data/log
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
+front/
+.idea/
 
 ### VS Code ###
 .vscode/

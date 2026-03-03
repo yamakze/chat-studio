@@ -252,6 +252,7 @@ public class ChatRepository implements IChatRepository {
                 .advisorIdList(advisorIdList)
                 .mcpIdList(mcpIdList)
                 .modelId(aiClientModel.getId())
+                .options(new AiClientOptionsVO())
                 .modelVersion(modelVersionList.get(0))
                 .systemPromptId(defaultPromptId)
                 .build();
